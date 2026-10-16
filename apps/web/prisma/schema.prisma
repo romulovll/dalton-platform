@@ -1,0 +1,445 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ORGANIZAÇÃO (CNPJ único — Instituto Dalton Salomão)
+// ============================================================
+
+model Organizacao {
+  id              String   @id @default(cuid())
+  nome            String   // "Instituto Dalton Salomão"
+  cnpj            String?  @unique
+  responsavelLegal String?  @map("responsavel_legal")
+  enderecoSede    String?  @map("endereco_sede")
+  logotipoUrl     String?  @map("logotipo_url")
+  prefixoTombamento String @default("IDS") @map("prefixo_tombamento")
+  proximoTombamento Int    @default(1) @map("proximo_tombamento")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  unidades Unidade[]
+
+  @@map("organizacoes")
+}
+
+// ============================================================
+// UNIDADES
+// ============================================================
+
+model Unidade {
+  id             String   @id @default(cuid())
+  codigo         String   @unique
+  nome           String
+  responsavel    String
+  telefone       String?
+  email          String?
+  logradouro     String?
+  numero         String?
+  complemento    String?
+  bairro         String?
+  cidade         String
+  uf             String   @default("SP")
+  cep            String?
+  situacao       SituacaoUnidade @default(ATIVA)
+  dataInicio     DateTime? @map("data_inicio")
+  observacoes    String?
+  organizacaoId  String   @map("organizacao_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organizacao    Organizacao @relation(fields: [organizacaoId], references: [id])
+  setores        Setor[]
+  bens           Bem[]
+  usuarioUnidades UsuarioUnidade[]
+
+  @@map("unidades")
+}
+
+enum SituacaoUnidade {
+  ATIVA
+  INATIVA
+  EM_IMPLANTACAO
+}
+
+// ============================================================
+// SETORES (por unidade)
+// ============================================================
+
+model Setor {
+  id         String   @id @default(cuid())
+  nome       String
+  unidadeId  String   @map("unidade_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  unidade    Unidade  @relation(fields: [unidadeId], references: [id])
+  bens       Bem[]
+
+  @@unique([unidadeId, nome])
+  @@map("setores")
+}
+
+// ============================================================
+// CATEGORIAS E TIPOS DE ITEM
+// ============================================================
+
+model Categoria {
+  id           String   @id @default(cuid())
+  nome         String   @unique
+  vidaUtilAnos Int      @map("vida_util_anos")
+  taxaAnual    Float    @map("taxa_anual")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tipos        TipoItem[]
+  bens         Bem[]
+
+  @@map("categorias")
+}
+
+model TipoItem {
+  id          String   @id @default(cuid())
+  nome        String
+  categoriaId String   @map("categoria_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  categoria   Categoria @relation(fields: [categoriaId], references: [id])
+  bens        Bem[]
+
+  @@unique([categoriaId, nome])
+  @@map("tipos_item")
+}
+
+// ============================================================
+// BENS PATRIMONIAIS
+// ============================================================
+
+model Bem {
+  id                  String   @id @default(cuid())
+  tombamento          String   @unique // IDS-000001
+  descricao           String
+  categoriaId         String   @map("categoria_id")
+  tipoItemId          String?  @map("tipo_item_id")
+  marca               String?
+  modelo              String?
+  numeroSerie         String?  @map("numero_serie")
+
+  // Localização atual
+  unidadeAtualId      String   @map("unidade_atual_id")
+  setorId             String?  @map("setor_id")
+  localizacao         String?  // descrição livre da localização
+
+  // Responsável
+  responsavel         String
+
+  // Aquisição
+  dataAquisicao       DateTime @map("data_aquisicao")
+  valorAquisicao      Decimal  @map("valor_aquisicao") @db.Decimal(12, 2)
+  formaAquisicao      FormaAquisicao @map("forma_aquisicao")
+  notaFiscal          String?  @map("nota_fiscal")
+  fornecedor          String?
+  origemRecurso       OrigemRecurso @map("origem_recurso")
+  numeroParceria      String?  @map("numero_parceria")
+
+  // Estado e situação
+  estadoConservacao   EstadoConservacao @map("estado_conservacao")
+  situacao            SituacaoBem @default(ATIVO)
+
+  // Depreciação
+  vidaUtilMeses       Int?     @map("vida_util_meses")
+  valorResidual       Decimal? @map("valor_residual") @db.Decimal(12, 2)
+  depreciacaoAcumulada Decimal @default(0) @map("depreciacao_acumulada") @db.Decimal(12, 2)
+
+  // Conformidade legal
+  inalienabilidade    Boolean  @default(false)
+  bemRemanescente     Boolean  @default(false) @map("bem_remanescente")
+  parceriaId          String?  @map("parceria_id")
+
+  // Mídia
+  fotoUrl             String?  @map("foto_url")
+  observacoes         String?
+
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Relações
+  categoria           Categoria @relation(fields: [categoriaId], references: [id])
+  tipoItem            TipoItem? @relation(fields: [tipoItemId], references: [id])
+  unidadeAtual        Unidade   @relation(fields: [unidadeAtualId], references: [id])
+  setor               Setor?    @relation(fields: [setorId], references: [id])
+  parceria            Parceria? @relation(fields: [parceriaId], references: [id])
+  movimentacoes       Movimentacao[]
+  auditLogs           AuditLog[]
+  inventarioItens     InventarioItem[]
+
+  @@map("bens")
+}
+
+enum FormaAquisicao {
+  COMPRA
+  DOACAO
+  CESSAO
+  COMODATO
+  TRANSFERENCIA
+}
+
+enum OrigemRecurso {
+  PROPRIO
+  PARCERIA_PUBLICA
+  DOACAO
+}
+
+enum EstadoConservacao {
+  EXCELENTE
+  BOM
+  REGULAR
+  RUIM
+  INSERVIVEL
+}
+
+enum SituacaoBem {
+  ATIVO
+  EM_MANUTENCAO
+  CEDIDO
+  BAIXADO
+  DESAPARECIDO
+}
+
+// ============================================================
+// MOVIMENTAÇÕES
+// ============================================================
+
+model Movimentacao {
+  id              String   @id @default(cuid())
+  bemId           String   @map("bem_id")
+  tipo            TipoMovimentacao
+  data            DateTime @default(now())
+  motivo          String?
+  observacoes     String?
+
+  // Para transferências
+  unidadeOrigemId String?  @map("unidade_origem_id")
+  unidadeDestinoId String? @map("unidade_destino_id")
+  setorOrigemId   String?  @map("setor_origem_id")
+  setorDestinoId  String?  @map("setor_destino_id")
+
+  // Para baixas
+  documentoAutorizador String? @map("documento_autorizador")
+
+  // Para manutenção
+  custoManutencao Decimal? @map("custo_manutencao") @db.Decimal(12, 2)
+  dataRetornoPrevisto DateTime? @map("data_retorno_previsto")
+  dataRetornoReal DateTime? @map("data_retorno_real")
+
+  usuarioId       String   @map("usuario_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  bem             Bem      @relation(fields: [bemId], references: [id])
+  usuario         Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@map("movimentacoes")
+}
+
+enum TipoMovimentacao {
+  TRANSFERENCIA_INTERNA
+  TRANSFERENCIA_UNIDADE
+  CESSAO
+  MANUTENCAO_ENVIO
+  MANUTENCAO_RETORNO
+  BAIXA
+}
+
+// ============================================================
+// PARCERIAS
+// ============================================================
+
+model Parceria {
+  id              String   @id @default(cuid())
+  numero          String   @unique
+  tipo            String   // Termo de Colaboração, Termo de Fomento, etc.
+  orgaoParceiro   String   @map("orgao_parceiro")
+  dataInicio      DateTime @map("data_inicio")
+  dataFim         DateTime? @map("data_fim")
+  valorRepasse    Decimal? @map("valor_repasse") @db.Decimal(12, 2)
+  situacao        String   @default("vigente")
+  observacoes     String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  bens            Bem[]
+
+  @@map("parcerias")
+}
+
+// ============================================================
+// USUÁRIOS E CONTROLE DE ACESSO
+// ============================================================
+
+model Usuario {
+  id              String   @id @default(cuid())
+  nome            String
+  email           String   @unique
+  senhaHash       String   @map("senha_hash")
+  cpf             String?  @unique
+  telefone        String?
+  situacao        SituacaoUsuario @default(ATIVO)
+  primeiroAcesso  Boolean  @default(true) @map("primeiro_acesso")
+  tentativasLogin Int      @default(0) @map("tentativas_login")
+  bloqueadoAte    DateTime? @map("bloqueado_ate")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  unidades        UsuarioUnidade[]
+  movimentacoes   Movimentacao[]
+  auditLogs       AuditLog[]
+  inventarios     Inventario[] @relation("inventario_responsavel")
+  chamados        Chamado[]
+
+  @@map("usuarios")
+}
+
+enum SituacaoUsuario {
+  ATIVO
+  INATIVO
+  BLOQUEADO
+}
+
+model UsuarioUnidade {
+  id         String   @id @default(cuid())
+  usuarioId  String   @map("usuario_id")
+  unidadeId  String   @map("unidade_id")
+  perfil     PerfilAcesso
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+  unidade    Unidade  @relation(fields: [unidadeId], references: [id])
+
+  @@unique([usuarioId, unidadeId])
+  @@map("usuario_unidades")
+}
+
+enum PerfilAcesso {
+  ADMIN_GERAL
+  ADMIN_UNIDADE
+  GESTOR
+  RESPONSAVEL_SETOR
+  CONTADOR
+  AUDITOR
+  CONSULTA
+}
+
+// ============================================================
+// INVENTÁRIO PERIÓDICO
+// ============================================================
+
+model Inventario {
+  id            String   @id @default(cuid())
+  codigo        String   @unique // INV-2026-001
+  dataInicio    DateTime @map("data_inicio") @default(now())
+  dataFim       DateTime? @map("data_fim")
+  situacao      SituacaoInventario @default(EM_ANDAMENTO)
+  responsavelId String   @map("responsavel_id")
+  observacoes   String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  responsavel   Usuario  @relation("inventario_responsavel", fields: [responsavelId], references: [id])
+  itens         InventarioItem[]
+
+  @@map("inventarios")
+}
+
+model InventarioItem {
+  id            String   @id @default(cuid())
+  inventarioId  String   @map("inventario_id")
+  bemId         String   @map("bem_id")
+  status        StatusVerificacao @default(PENDENTE)
+  observacoes   String?
+  verificadoEm  DateTime? @map("verificado_em")
+  verificadoPor String?  @map("verificado_por")
+
+  inventario    Inventario @relation(fields: [inventarioId], references: [id])
+  bem           Bem        @relation(fields: [bemId], references: [id])
+
+  @@unique([inventarioId, bemId])
+  @@map("inventario_itens")
+}
+
+enum SituacaoInventario {
+  EM_ANDAMENTO
+  CONCLUIDO
+  CANCELADO
+}
+
+enum StatusVerificacao {
+  PENDENTE
+  LOCALIZADO
+  NAO_LOCALIZADO
+  DIVERGENTE
+}
+
+// ============================================================
+// CHAMADOS (suporte / relato de erros)
+// ============================================================
+
+model Chamado {
+  id          String   @id @default(cuid())
+  titulo      String
+  descricao   String
+  tipo        TipoChamado
+  prioridade  PrioridadeChamado @default(MEDIA)
+  situacao    SituacaoChamado   @default(ABERTO)
+  resposta    String?
+  usuarioId   String   @map("usuario_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@map("chamados")
+}
+
+enum TipoChamado {
+  ERRO
+  AJUSTE
+  DUVIDA
+  SUGESTAO
+}
+
+enum PrioridadeChamado {
+  BAIXA
+  MEDIA
+  ALTA
+  URGENTE
+}
+
+enum SituacaoChamado {
+  ABERTO
+  EM_ANDAMENTO
+  RESOLVIDO
+  FECHADO
+}
+
+// ============================================================
+// AUDITORIA
+// ============================================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  acao       String   // CREATE, UPDATE, DELETE
+  entidade   String   // "Bem", "Unidade", etc.
+  entidadeId String   @map("entidade_id")
+  bemId      String?  @map("bem_id")
+  dados      Json?    // snapshot dos dados alterados
+  usuarioId  String   @map("usuario_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  usuario    Usuario  @relation(fields: [usuarioId], references: [id])
+  bem        Bem?     @relation(fields: [bemId], references: [id])
+
+  @@map("audit_logs")
+}
