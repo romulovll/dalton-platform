@@ -15,8 +15,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Upload, Save, FileText } from "lucide-react";
+import { ArrowLeft, Upload, Save, FileText, AlertTriangle, ShieldCheck } from "lucide-react";
 import { createDocumento } from "@/lib/actions/documentos";
+
+interface ScanMatch {
+  tipo: string;
+  valor: string;
+  contexto: string;
+}
+
+interface ScanResult {
+  matches: ScanMatch[];
+  hasSensitiveData: boolean;
+  message: string;
+}
 
 const categorias = [
   { value: "BALANCO", label: "Balanço Patrimonial" },
@@ -36,7 +48,9 @@ const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 export default function NovoDocumentoPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [fileInfo, setFileInfo] = useState<{ url: string; name: string; size: number } | null>(null);
+  const [scanResult, setScanResult] = useState<ScanResult | null>(null);
 
   const [, formAction, isPending] = useActionState(
     async (_prev: unknown, formData: FormData) => {
@@ -55,15 +69,30 @@ export default function NovoDocumentoPage() {
     if (!file) return;
 
     setUploading(true);
+    setScanResult(null);
     try {
+      // Upload file
       const fd = new FormData();
       fd.append("arquivo", file);
       const res = await fetch("/api/upload-documento", { method: "POST", body: fd });
       const data = await res.json();
-      if (res.ok) {
-        setFileInfo({ url: data.arquivoUrl, name: data.nomeArquivo, size: data.tamanho });
-      } else {
+      if (!res.ok) {
         alert(data.error || "Erro ao enviar arquivo");
+        return;
+      }
+      setFileInfo({ url: data.arquivoUrl, name: data.nomeArquivo, size: data.tamanho });
+
+      // Scan for sensitive data (PDFs only)
+      if (file.type === "application/pdf") {
+        setScanning(true);
+        const scanFd = new FormData();
+        scanFd.append("arquivo", file);
+        const scanRes = await fetch("/api/scan-documento", { method: "POST", body: scanFd });
+        if (scanRes.ok) {
+          const scanData = await scanRes.json();
+          setScanResult(scanData);
+        }
+        setScanning(false);
       }
     } catch {
       alert("Erro de conexão");
@@ -169,6 +198,44 @@ export default function NovoDocumentoPage() {
                 )}
               </div>
             </div>
+
+            {/* LGPD Scan Results */}
+            {scanning && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 flex items-center gap-2">
+                <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                Verificando dados sensíveis (LGPD)...
+              </div>
+            )}
+
+            {scanResult && !scanning && (
+              <div className={`rounded-lg border p-4 text-sm ${
+                scanResult.hasSensitiveData
+                  ? "border-red-200 bg-red-50 text-red-800"
+                  : "border-green-200 bg-green-50 text-green-800"
+              }`}>
+                <div className="flex items-center gap-2 font-medium mb-2">
+                  {scanResult.hasSensitiveData ? (
+                    <><AlertTriangle className="h-4 w-4" /> Dados Sensíveis Detectados (LGPD)</>
+                  ) : (
+                    <><ShieldCheck className="h-4 w-4" /> {scanResult.message}</>
+                  )}
+                </div>
+                {scanResult.matches.length > 0 && (
+                  <div className="space-y-2 mt-3">
+                    {scanResult.matches.map((m, i) => (
+                      <div key={i} className="rounded bg-white/60 p-2 text-xs">
+                        <span className="font-semibold">{m.tipo}:</span>{" "}
+                        <span className="font-mono">{m.valor}</span>
+                        <p className="text-gray-500 mt-0.5 truncate">...{m.contexto}...</p>
+                      </div>
+                    ))}
+                    <p className="text-xs mt-2 font-medium">
+                      Recomendação: remova ou redija esses dados antes de publicar o documento.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="flex gap-3 pt-4">
               <Link href="/documentos">
