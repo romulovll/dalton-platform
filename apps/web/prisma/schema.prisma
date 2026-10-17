@@ -298,6 +298,7 @@ model Usuario {
   auditLogs       AuditLog[]
   inventarios     Inventario[] @relation("inventario_responsavel")
   chamados        Chamado[]
+  documentos      Documento[]
 
   @@map("usuarios")
 }
@@ -422,6 +423,41 @@ enum SituacaoChamado {
   EM_ANDAMENTO
   RESOLVIDO
   FECHADO
+}
+
+// ============================================================
+// TRANSPARÊNCIA (documentos públicos)
+// ============================================================
+
+model Documento {
+  id          String   @id @default(cuid())
+  titulo      String
+  descricao   String?
+  categoria   CategoriaDocumento
+  ano         Int
+  arquivoUrl  String   @map("arquivo_url")
+  nomeArquivo String   @map("nome_arquivo")
+  tamanho     Int      // bytes
+  publicado   Boolean  @default(true)
+  usuarioId   String   @map("usuario_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id])
+
+  @@map("documentos")
+}
+
+enum CategoriaDocumento {
+  BALANCO
+  PRESTACAO_CONTAS
+  ATA
+  ESTATUTO
+  RELATORIO_ATIVIDADES
+  PARECER_FISCAL
+  CERTIDAO
+  CONTRATO_PARCERIA
+  OUTRO
 }
 
 // ============================================================

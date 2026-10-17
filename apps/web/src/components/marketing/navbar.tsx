@@ -8,7 +8,7 @@ import { Menu, X } from "lucide-react";
 const NAV_LINKS = [
   { label: "Sobre", href: "#sobre" },
   { label: "Funcionalidades", href: "#funcionalidades" },
-  { label: "Como Funciona", href: "#como-funciona" },
+  { label: "Transparência", href: "/transparencia" },
   { label: "Contato", href: "#contato" },
 ];
 

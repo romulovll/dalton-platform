@@ -17,6 +17,7 @@ import {
   ClipboardCheck,
   ShieldCheck,
   MessageSquareWarning,
+  FileText,
 } from "lucide-react";
 import {
   Sidebar,
@@ -54,6 +55,7 @@ const menuItems = [
     items: [
       { label: "Usuários", href: "/usuarios", icon: Users },
       { label: "Relatórios", href: "/relatorios", icon: FileBarChart },
+      { label: "Documentos", href: "/documentos", icon: FileText },
       { label: "Auditoria", href: "/auditoria", icon: ShieldCheck },
       { label: "Configurações", href: "/configuracoes", icon: Settings },
       { label: "Chamados", href: "/chamados", icon: MessageSquareWarning },

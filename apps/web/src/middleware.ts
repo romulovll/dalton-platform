@@ -8,7 +8,7 @@ function getSecret() {
 }
 
 // Only these paths are accessible without authentication
-const PUBLIC_PATHS = ["/", "/login", "/esqueci-senha", "/primeiro-acesso"];
+const PUBLIC_PATHS = ["/", "/login", "/esqueci-senha", "/primeiro-acesso", "/transparencia"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

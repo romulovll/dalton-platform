@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown, ShieldCheck } from "lucide-react";
 
 export function HeroSection() {
   return (
@@ -102,12 +102,13 @@ export function HeroSection() {
               className="transition-transform group-hover:translate-x-1"
             />
           </Link>
-          <a
-            href="#funcionalidades"
-            className="flex items-center gap-2 rounded-xl border-2 border-white/30 px-8 py-4 text-base font-semibold text-white transition-all hover:bg-white/10 hover:border-white/50"
+          <Link
+            href="/transparencia"
+            className="group flex items-center gap-2 rounded-xl border-2 border-white/30 px-8 py-4 text-base font-semibold text-white transition-all hover:bg-white/10 hover:border-white/50"
           >
-            Conhecer Funcionalidades
-          </a>
+            <ShieldCheck size={18} />
+            Portal de Transparência
+          </Link>
         </motion.div>
       </div>
 
