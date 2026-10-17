@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 const BASE_URL =
   process.env.PLAYWRIGHT_BASE_URL ||
-  "https://dalton-web-996614634730.southamerica-east1.run.app";
+  "https://dalton-web-20602711487.southamerica-east1.run.app";
 
 export default defineConfig({
   testDir: "./e2e",

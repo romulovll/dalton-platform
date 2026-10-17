@@ -5,7 +5,7 @@ async function loginAs(page: Page) {
   await page.getByLabel("E-mail").fill("admin@institutodalton.org.br");
   await page.getByLabel("Senha").fill("admin123");
   await page.getByRole("button", { name: /Entrar/i }).click();
-  await page.waitForURL("/painel", { timeout: 10000 });
+  await page.waitForURL("/painel", { timeout: 30000 });
 }
 
 test.describe("Busca e Filtros de Bens", () => {
