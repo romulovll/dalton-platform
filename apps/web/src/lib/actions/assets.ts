@@ -103,8 +103,12 @@ export async function getBens(filters?: {
 }
 
 export async function getBem(id: string) {
+  // Support lookup by CUID or tombamento (e.g. IDS-000001)
+  const where = id.startsWith("IDS-") || id.match(/^[A-Z]+-\d+$/)
+    ? { tombamento: id }
+    : { id };
   return prisma.bem.findUnique({
-    where: { id },
+    where,
     include: {
       categoria: true,
       tipoItem: true,
