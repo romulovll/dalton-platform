@@ -237,32 +237,34 @@ export default async function RelatoriosPage({
             <h3 className="font-semibold text-sm text-texto-escuro mb-2">
               2. Composição por Categoria e Critérios de Depreciação
             </h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Categoria</TableHead>
-                  <TableHead className="text-center">Qtde</TableHead>
-                  <TableHead className="text-center">Vida Útil</TableHead>
-                  <TableHead className="text-center">Taxa Anual</TableHead>
-                  <TableHead className="text-right">Valor Aquisição</TableHead>
-                  <TableHead className="text-right">Depreciação Acum.</TableHead>
-                  <TableHead className="text-right">Valor Contábil</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {notas.porCategoria.map((c) => (
-                  <TableRow key={c.categoria}>
-                    <TableCell className="text-sm">{c.categoria}</TableCell>
-                    <TableCell className="text-sm text-center">{c.quantidade}</TableCell>
-                    <TableCell className="text-sm text-center">{c.vidaUtilAnos} anos</TableCell>
-                    <TableCell className="text-sm text-center">{c.taxaAnual.toFixed(0)}%</TableCell>
-                    <TableCell className="text-sm text-right font-mono">{fmt(c.valorAquisicao)}</TableCell>
-                    <TableCell className="text-sm text-right font-mono text-vermelho">{fmt(c.depreciacaoAcumulada)}</TableCell>
-                    <TableCell className="text-sm text-right font-mono font-medium">{fmt(c.valorAquisicao - c.depreciacaoAcumulada)}</TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead className="text-center">Qtde</TableHead>
+                    <TableHead className="text-center">Vida Útil</TableHead>
+                    <TableHead className="text-center">Taxa Anual</TableHead>
+                    <TableHead className="text-right">Valor Aquisição</TableHead>
+                    <TableHead className="text-right">Depreciação Acum.</TableHead>
+                    <TableHead className="text-right">Valor Contábil</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {notas.porCategoria.map((c) => (
+                    <TableRow key={c.categoria}>
+                      <TableCell className="text-sm">{c.categoria}</TableCell>
+                      <TableCell className="text-sm text-center">{c.quantidade}</TableCell>
+                      <TableCell className="text-sm text-center">{c.vidaUtilAnos} anos</TableCell>
+                      <TableCell className="text-sm text-center">{c.taxaAnual.toFixed(0)}%</TableCell>
+                      <TableCell className="text-sm text-right font-mono">{fmt(c.valorAquisicao)}</TableCell>
+                      <TableCell className="text-sm text-right font-mono text-vermelho">{fmt(c.depreciacaoAcumulada)}</TableCell>
+                      <TableCell className="text-sm text-right font-mono font-medium">{fmt(c.valorAquisicao - c.depreciacaoAcumulada)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
           {/* By origin of resources */}
@@ -270,26 +272,28 @@ export default async function RelatoriosPage({
             <h3 className="font-semibold text-sm text-texto-escuro mb-2">
               3. Origem dos Recursos
             </h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Origem</TableHead>
-                  <TableHead className="text-center">Qtde</TableHead>
-                  <TableHead className="text-right">Valor Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {notas.porOrigem.map((o) => (
-                  <TableRow key={o.origem}>
-                    <TableCell className="text-sm">
-                      {o.origem === "PROPRIO" ? "Recursos Próprios" : o.origem === "PARCERIA_PUBLICA" ? "Parceria Pública" : "Doação"}
-                    </TableCell>
-                    <TableCell className="text-sm text-center">{o.quantidade}</TableCell>
-                    <TableCell className="text-sm text-right font-mono">{fmt(o.valor)}</TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Origem</TableHead>
+                    <TableHead className="text-center">Qtde</TableHead>
+                    <TableHead className="text-right">Valor Total</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {notas.porOrigem.map((o) => (
+                    <TableRow key={o.origem}>
+                      <TableCell className="text-sm">
+                        {o.origem === "PROPRIO" ? "Recursos Próprios" : o.origem === "PARCERIA_PUBLICA" ? "Parceria Pública" : "Doação"}
+                      </TableCell>
+                      <TableCell className="text-sm text-center">{o.quantidade}</TableCell>
+                      <TableCell className="text-sm text-right font-mono">{fmt(o.valor)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
           {/* By acquisition form */}
@@ -297,26 +301,28 @@ export default async function RelatoriosPage({
             <h3 className="font-semibold text-sm text-texto-escuro mb-2">
               4. Forma de Aquisição
             </h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Forma</TableHead>
-                  <TableHead className="text-center">Qtde</TableHead>
-                  <TableHead className="text-right">Valor Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {notas.porFormaAquisicao.map((f) => (
-                  <TableRow key={f.forma}>
-                    <TableCell className="text-sm">
-                      {f.forma === "COMPRA" ? "Compra" : f.forma === "DOACAO" ? "Doação" : f.forma === "CESSAO" ? "Cessão" : f.forma === "COMODATO" ? "Comodato" : "Transferência"}
-                    </TableCell>
-                    <TableCell className="text-sm text-center">{f.quantidade}</TableCell>
-                    <TableCell className="text-sm text-right font-mono">{fmt(f.valor)}</TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Forma</TableHead>
+                    <TableHead className="text-center">Qtde</TableHead>
+                    <TableHead className="text-right">Valor Total</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {notas.porFormaAquisicao.map((f) => (
+                    <TableRow key={f.forma}>
+                      <TableCell className="text-sm">
+                        {f.forma === "COMPRA" ? "Compra" : f.forma === "DOACAO" ? "Doação" : f.forma === "CESSAO" ? "Cessão" : f.forma === "COMODATO" ? "Comodato" : "Transferência"}
+                      </TableCell>
+                      <TableCell className="text-sm text-center">{f.quantidade}</TableCell>
+                      <TableCell className="text-sm text-right font-mono">{fmt(f.valor)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
           {/* Active partnerships */}
@@ -325,26 +331,28 @@ export default async function RelatoriosPage({
               <h3 className="font-semibold text-sm text-texto-escuro mb-2">
                 5. Parcerias Vigentes (Lei 13.019/2014)
               </h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Número</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Órgão</TableHead>
-                    <TableHead className="text-center">Bens Vinculados</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {notas.parcerias.map((p) => (
-                    <TableRow key={p.numero}>
-                      <TableCell className="text-sm font-mono">{p.numero}</TableCell>
-                      <TableCell className="text-sm">{p.tipo}</TableCell>
-                      <TableCell className="text-sm">{p.orgao}</TableCell>
-                      <TableCell className="text-sm text-center">{p.bensVinculados}</TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Número</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Órgão</TableHead>
+                      <TableHead className="text-center">Bens Vinculados</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {notas.parcerias.map((p) => (
+                      <TableRow key={p.numero}>
+                        <TableCell className="text-sm font-mono">{p.numero}</TableCell>
+                        <TableCell className="text-sm">{p.tipo}</TableCell>
+                        <TableCell className="text-sm">{p.orgao}</TableCell>
+                        <TableCell className="text-sm text-center">{p.bensVinculados}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
 

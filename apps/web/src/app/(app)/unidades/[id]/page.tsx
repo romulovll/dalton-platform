@@ -136,22 +136,24 @@ export default async function UnidadeDetailPage({ params }: { params: Promise<{ 
               Nenhum setor cadastrado nesta unidade.
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Bens</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {setores.map((setor) => (
-                  <TableRow key={setor.id}>
-                    <TableCell className="font-medium">{setor.nome}</TableCell>
-                    <TableCell>{setor._count.bens}</TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Bens</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {setores.map((setor) => (
+                    <TableRow key={setor.id}>
+                      <TableCell className="font-medium">{setor.nome}</TableCell>
+                      <TableCell>{setor._count.bens}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
 
           <AddSetorForm unidadeId={id} />

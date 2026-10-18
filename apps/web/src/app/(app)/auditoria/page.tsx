@@ -90,55 +90,57 @@ export default async function AuditoriaPage({
             </div>
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Data/Hora</TableHead>
-                    <TableHead>Ação</TableHead>
-                    <TableHead>Entidade</TableHead>
-                    <TableHead>Bem</TableHead>
-                    <TableHead>Detalhes</TableHead>
-                    <TableHead>Usuário</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {logs.map((log) => {
-                    const dados = log.dados as Record<string, unknown> | null;
-                    return (
-                      <TableRow key={log.id}>
-                        <TableCell className="text-sm whitespace-nowrap">
-                          {log.createdAt.toLocaleString("pt-BR")}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className={acaoStyle[log.acao] || ""}>
-                            {acaoLabel[log.acao] || log.acao}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {entidadeLabel[log.entidade] || log.entidade}
-                        </TableCell>
-                        <TableCell className="text-sm font-mono">
-                          {log.bem ? (
-                            <Link href={`/bens/${log.bem.tombamento}`} className="text-verde-escuro hover:underline">
-                              {log.bem.tombamento}
-                            </Link>
-                          ) : (
-                            "—"
-                          )}
-                        </TableCell>
-                        <TableCell className="text-sm max-w-xs truncate">
-                          {dados
-                            ? Object.entries(dados)
-                                .map(([k, v]) => `${k}: ${v}`)
-                                .join(", ")
-                            : "—"}
-                        </TableCell>
-                        <TableCell className="text-sm">{log.usuario.nome}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Data/Hora</TableHead>
+                      <TableHead>Ação</TableHead>
+                      <TableHead>Entidade</TableHead>
+                      <TableHead>Bem</TableHead>
+                      <TableHead>Detalhes</TableHead>
+                      <TableHead>Usuário</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {logs.map((log) => {
+                      const dados = log.dados as Record<string, unknown> | null;
+                      return (
+                        <TableRow key={log.id}>
+                          <TableCell className="text-sm whitespace-nowrap">
+                            {log.createdAt.toLocaleString("pt-BR")}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className={acaoStyle[log.acao] || ""}>
+                              {acaoLabel[log.acao] || log.acao}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {entidadeLabel[log.entidade] || log.entidade}
+                          </TableCell>
+                          <TableCell className="text-sm font-mono">
+                            {log.bem ? (
+                              <Link href={`/bens/${log.bem.tombamento}`} className="text-verde-escuro hover:underline">
+                                {log.bem.tombamento}
+                              </Link>
+                            ) : (
+                              "—"
+                            )}
+                          </TableCell>
+                          <TableCell className="text-sm max-w-xs truncate">
+                            {dados
+                              ? Object.entries(dados)
+                                  .map(([k, v]) => `${k}: ${v}`)
+                                  .join(", ")
+                              : "—"}
+                          </TableCell>
+                          <TableCell className="text-sm">{log.usuario.nome}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
 
               {/* Pagination */}
               {totalPages > 1 && (

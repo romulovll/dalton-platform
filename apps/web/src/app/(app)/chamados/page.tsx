@@ -98,47 +98,49 @@ export default async function ChamadosPage({
               </Link>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Prioridade</TableHead>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Aberto por</TableHead>
-                  <TableHead>Situação</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {chamados.map((c) => {
-                  const tipo = tipoConfig[c.tipo];
-                  const prio = prioridadeConfig[c.prioridade];
-                  const sit = situacaoConfig[c.situacao];
-                  return (
-                    <TableRow key={c.id}>
-                      <TableCell className="text-sm whitespace-nowrap">
-                        {c.createdAt.toLocaleDateString("pt-BR")}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={tipo.className}>{tipo.label}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={prio.className}>{prio.label}</Badge>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        <Link href={`/chamados/${c.id}`} className="text-verde-escuro hover:underline">
-                          {c.titulo}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-sm">{c.usuario.nome}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={sit.className}>{sit.label}</Badge>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Prioridade</TableHead>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Aberto por</TableHead>
+                    <TableHead>Situação</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {chamados.map((c) => {
+                    const tipo = tipoConfig[c.tipo];
+                    const prio = prioridadeConfig[c.prioridade];
+                    const sit = situacaoConfig[c.situacao];
+                    return (
+                      <TableRow key={c.id}>
+                        <TableCell className="text-sm whitespace-nowrap">
+                          {c.createdAt.toLocaleDateString("pt-BR")}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={tipo.className}>{tipo.label}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={prio.className}>{prio.label}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          <Link href={`/chamados/${c.id}`} className="text-verde-escuro hover:underline">
+                            {c.titulo}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-sm">{c.usuario.nome}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={sit.className}>{sit.label}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

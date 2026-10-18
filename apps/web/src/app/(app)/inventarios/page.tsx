@@ -59,43 +59,45 @@ export default async function InventariosPage() {
               </Link>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Código</TableHead>
-                  <TableHead>Data Início</TableHead>
-                  <TableHead>Data Fim</TableHead>
-                  <TableHead>Responsável</TableHead>
-                  <TableHead className="text-center">Itens</TableHead>
-                  <TableHead>Situação</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {inventarios.map((inv) => {
-                  const sit = situacaoStyle[inv.situacao];
-                  return (
-                    <TableRow key={inv.id}>
-                      <TableCell className="font-mono text-sm">
-                        <Link href={`/inventarios/${inv.id}`} className="text-verde-escuro hover:underline">
-                          {inv.codigo}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {inv.dataInicio.toLocaleDateString("pt-BR")}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {inv.dataFim ? inv.dataFim.toLocaleDateString("pt-BR") : "—"}
-                      </TableCell>
-                      <TableCell className="text-sm">{inv.responsavel.nome}</TableCell>
-                      <TableCell className="text-sm text-center">{inv._count.itens}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={sit.className}>{sit.label}</Badge>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Código</TableHead>
+                    <TableHead>Data Início</TableHead>
+                    <TableHead>Data Fim</TableHead>
+                    <TableHead>Responsável</TableHead>
+                    <TableHead className="text-center">Itens</TableHead>
+                    <TableHead>Situação</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {inventarios.map((inv) => {
+                    const sit = situacaoStyle[inv.situacao];
+                    return (
+                      <TableRow key={inv.id}>
+                        <TableCell className="font-mono text-sm">
+                          <Link href={`/inventarios/${inv.id}`} className="text-verde-escuro hover:underline">
+                            {inv.codigo}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {inv.dataInicio.toLocaleDateString("pt-BR")}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {inv.dataFim ? inv.dataFim.toLocaleDateString("pt-BR") : "—"}
+                        </TableCell>
+                        <TableCell className="text-sm">{inv.responsavel.nome}</TableCell>
+                        <TableCell className="text-sm text-center">{inv._count.itens}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={sit.className}>{sit.label}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

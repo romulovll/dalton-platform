@@ -14,7 +14,7 @@ export default function AppLayout({
         <AppSidebar />
         <SidebarInset>
           <TopBar />
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 p-4 sm:p-6 overflow-x-auto min-w-0">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

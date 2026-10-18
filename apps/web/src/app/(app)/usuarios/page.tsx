@@ -82,56 +82,58 @@ export default async function UsuariosPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>E-mail</TableHead>
-                <TableHead>Perfil</TableHead>
-                <TableHead>Unidades</TableHead>
-                <TableHead>Situação</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {usuarios.map((u) => {
-                const perfis = u.unidades.map((uu) => uu.perfil);
-                const mainPerfil = perfis[0];
-                const unidadeNames = u.unidades.map((uu) => uu.unidade.nome);
-                const sit = situacaoConfig[u.situacao];
-                return (
-                  <TableRow key={u.id}>
-                    <TableCell className="font-medium">{u.nome}</TableCell>
-                    <TableCell className="text-sm">{u.email}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="bg-verde-escuro/10 text-verde-escuro">
-                        {mainPerfil ? perfilLabels[mainPerfil] : "Sem perfil"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {mainPerfil === "ADMIN_GERAL"
-                        ? "Todas"
-                        : unidadeNames.join(", ") || "Nenhuma"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={sit.className}>
-                        {sit.label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Link
-                        href={`/usuarios/${u.id}/editar`}
-                        className="inline-flex items-center gap-1 text-sm text-verde-escuro hover:underline"
-                      >
-                        <Pencil className="h-3 w-3" />
-                        Editar
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>E-mail</TableHead>
+                  <TableHead>Perfil</TableHead>
+                  <TableHead>Unidades</TableHead>
+                  <TableHead>Situação</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {usuarios.map((u) => {
+                  const perfis = u.unidades.map((uu) => uu.perfil);
+                  const mainPerfil = perfis[0];
+                  const unidadeNames = u.unidades.map((uu) => uu.unidade.nome);
+                  const sit = situacaoConfig[u.situacao];
+                  return (
+                    <TableRow key={u.id}>
+                      <TableCell className="font-medium">{u.nome}</TableCell>
+                      <TableCell className="text-sm">{u.email}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="bg-verde-escuro/10 text-verde-escuro">
+                          {mainPerfil ? perfilLabels[mainPerfil] : "Sem perfil"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {mainPerfil === "ADMIN_GERAL"
+                          ? "Todas"
+                          : unidadeNames.join(", ") || "Nenhuma"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className={sit.className}>
+                          {sit.label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Link
+                          href={`/usuarios/${u.id}/editar`}
+                          className="inline-flex items-center gap-1 text-sm text-verde-escuro hover:underline"
+                        >
+                          <Pencil className="h-3 w-3" />
+                          Editar
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 

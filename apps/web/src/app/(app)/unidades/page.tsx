@@ -65,48 +65,50 @@ export default async function UnidadesPage() {
               </Link>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Código</TableHead>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Cidade/UF</TableHead>
-                  <TableHead>Responsável</TableHead>
-                  <TableHead>Bens</TableHead>
-                  <TableHead>Situação</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {unidades.map((unidade) => {
-                  const sit = situacaoConfig[unidade.situacao];
-                  return (
-                    <TableRow key={unidade.id}>
-                      <TableCell className="font-mono text-sm">
-                        {unidade.codigo}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        <Link
-                          href={`/unidades/${unidade.id}`}
-                          className="text-verde-escuro hover:underline"
-                        >
-                          {unidade.nome}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        {unidade.cidade} — {unidade.uf}
-                      </TableCell>
-                      <TableCell>{unidade.responsavel}</TableCell>
-                      <TableCell>{unidade._count.bens}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={sit.className}>
-                          {sit.label}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Código</TableHead>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Cidade/UF</TableHead>
+                    <TableHead>Responsável</TableHead>
+                    <TableHead>Bens</TableHead>
+                    <TableHead>Situação</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {unidades.map((unidade) => {
+                    const sit = situacaoConfig[unidade.situacao];
+                    return (
+                      <TableRow key={unidade.id}>
+                        <TableCell className="font-mono text-sm">
+                          {unidade.codigo}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          <Link
+                            href={`/unidades/${unidade.id}`}
+                            className="text-verde-escuro hover:underline"
+                          >
+                            {unidade.nome}
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          {unidade.cidade} — {unidade.uf}
+                        </TableCell>
+                        <TableCell>{unidade.responsavel}</TableCell>
+                        <TableCell>{unidade._count.bens}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={sit.className}>
+                            {sit.label}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

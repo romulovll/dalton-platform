@@ -101,64 +101,66 @@ export function BensTable({ bens }: { bens: BemRow[] }) {
           </Button>
         </div>
       )}
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-10">
-              <input
-                type="checkbox"
-                checked={allSelected}
-                onChange={toggleAll}
-                className="rounded border-gray-300 h-4 w-4"
-              />
-            </TableHead>
-            <TableHead>Tombamento</TableHead>
-            <TableHead>Descrição</TableHead>
-            <TableHead>Categoria</TableHead>
-            <TableHead>Unidade</TableHead>
-            <TableHead>Responsável</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Situação</TableHead>
-            <TableHead className="text-right">Valor (R$)</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {bens.map((bem) => (
-            <TableRow key={bem.id} className={selected.has(bem.id) ? "bg-verde-escuro/5" : ""}>
-              <TableCell>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-10">
                 <input
                   type="checkbox"
-                  checked={selected.has(bem.id)}
-                  onChange={() => toggle(bem.id)}
+                  checked={allSelected}
+                  onChange={toggleAll}
                   className="rounded border-gray-300 h-4 w-4"
                 />
-              </TableCell>
-              <TableCell className="font-mono text-sm font-medium">
-                <Link href={`/bens/${bem.id}`} className="text-verde-escuro hover:underline">
-                  {bem.tombamento}
-                </Link>
-              </TableCell>
-              <TableCell>{bem.descricao}</TableCell>
-              <TableCell className="text-sm">{bem.categoria}</TableCell>
-              <TableCell className="text-sm">{bem.unidade}</TableCell>
-              <TableCell className="text-sm">{bem.responsavel}</TableCell>
-              <TableCell>
-                <Badge variant="secondary" className={estadoColors[bem.estadoConservacao]}>
-                  {estadoLabels[bem.estadoConservacao]}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant="secondary" className={situacaoColors[bem.situacao]}>
-                  {situacaoLabels[bem.situacao]}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right font-mono text-sm">
-                {bem.valorAquisicao.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-              </TableCell>
+              </TableHead>
+              <TableHead>Tombamento</TableHead>
+              <TableHead>Descrição</TableHead>
+              <TableHead>Categoria</TableHead>
+              <TableHead>Unidade</TableHead>
+              <TableHead>Responsável</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Situação</TableHead>
+              <TableHead className="text-right">Valor (R$)</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {bens.map((bem) => (
+              <TableRow key={bem.id} className={selected.has(bem.id) ? "bg-verde-escuro/5" : ""}>
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    checked={selected.has(bem.id)}
+                    onChange={() => toggle(bem.id)}
+                    className="rounded border-gray-300 h-4 w-4"
+                  />
+                </TableCell>
+                <TableCell className="font-mono text-sm font-medium">
+                  <Link href={`/bens/${bem.id}`} className="text-verde-escuro hover:underline">
+                    {bem.tombamento}
+                  </Link>
+                </TableCell>
+                <TableCell>{bem.descricao}</TableCell>
+                <TableCell className="text-sm">{bem.categoria}</TableCell>
+                <TableCell className="text-sm">{bem.unidade}</TableCell>
+                <TableCell className="text-sm">{bem.responsavel}</TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className={estadoColors[bem.estadoConservacao]}>
+                    {estadoLabels[bem.estadoConservacao]}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className={situacaoColors[bem.situacao]}>
+                    {situacaoLabels[bem.situacao]}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right font-mono text-sm">
+                  {bem.valorAquisicao.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </>
   );
 }

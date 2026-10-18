@@ -59,50 +59,52 @@ export default async function ParceriasPage() {
               </Link>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Número</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Órgão Parceiro</TableHead>
-                  <TableHead>Início</TableHead>
-                  <TableHead>Fim</TableHead>
-                  <TableHead className="text-right">Valor Repasse</TableHead>
-                  <TableHead>Bens</TableHead>
-                  <TableHead>Situação</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {parcerias.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell className="font-mono text-sm">
-                      <Link href={`/parcerias/${p.id}`} className="text-verde-escuro hover:underline">
-                        {p.numero}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-sm">{p.tipo}</TableCell>
-                    <TableCell className="text-sm">{p.orgaoParceiro}</TableCell>
-                    <TableCell className="text-sm">
-                      {p.dataInicio.toLocaleDateString("pt-BR")}
-                    </TableCell>
-                    <TableCell className="text-sm">
-                      {p.dataFim ? p.dataFim.toLocaleDateString("pt-BR") : "—"}
-                    </TableCell>
-                    <TableCell className="text-sm text-right">
-                      {p.valorRepasse
-                        ? Number(p.valorRepasse).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-                        : "—"}
-                    </TableCell>
-                    <TableCell className="text-sm text-center">{p._count.bens}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={situacaoStyle[p.situacao] || "bg-gray-100"}>
-                        {p.situacao.charAt(0).toUpperCase() + p.situacao.slice(1).replace("_", " ")}
-                      </Badge>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Número</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Órgão Parceiro</TableHead>
+                    <TableHead>Início</TableHead>
+                    <TableHead>Fim</TableHead>
+                    <TableHead className="text-right">Valor Repasse</TableHead>
+                    <TableHead>Bens</TableHead>
+                    <TableHead>Situação</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {parcerias.map((p) => (
+                    <TableRow key={p.id}>
+                      <TableCell className="font-mono text-sm">
+                        <Link href={`/parcerias/${p.id}`} className="text-verde-escuro hover:underline">
+                          {p.numero}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="text-sm">{p.tipo}</TableCell>
+                      <TableCell className="text-sm">{p.orgaoParceiro}</TableCell>
+                      <TableCell className="text-sm">
+                        {p.dataInicio.toLocaleDateString("pt-BR")}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {p.dataFim ? p.dataFim.toLocaleDateString("pt-BR") : "—"}
+                      </TableCell>
+                      <TableCell className="text-sm text-right">
+                        {p.valorRepasse
+                          ? Number(p.valorRepasse).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                          : "—"}
+                      </TableCell>
+                      <TableCell className="text-sm text-center">{p._count.bens}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className={situacaoStyle[p.situacao] || "bg-gray-100"}>
+                          {p.situacao.charAt(0).toUpperCase() + p.situacao.slice(1).replace("_", " ")}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

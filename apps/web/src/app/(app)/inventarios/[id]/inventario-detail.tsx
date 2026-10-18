@@ -204,74 +204,76 @@ export function InventarioDetail({
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Tombamento</TableHead>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Unidade</TableHead>
-                <TableHead>Localização</TableHead>
-                <TableHead>Status</TableHead>
-                {!isClosed && <TableHead className="text-right">Ações</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((item) => {
-                const st = statusConfig[item.status];
-                return (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-mono text-sm">
-                      <Link href={`/bens/${item.bem.id}`} className="text-verde-escuro hover:underline">
-                        {item.bem.tombamento}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-sm">{item.bem.descricao}</TableCell>
-                    <TableCell className="text-sm">{item.bem.unidade}</TableCell>
-                    <TableCell className="text-sm">{item.bem.localizacao || "—"}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={st.className}>{st.label}</Badge>
-                    </TableCell>
-                    {!isClosed && (
-                      <TableCell className="text-right">
-                        <div className="flex gap-1 justify-end">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-green-600 hover:bg-green-50"
-                            onClick={() => handleStatusChange(item.id, "LOCALIZADO")}
-                            disabled={isPending}
-                            title="Localizado"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-red-600 hover:bg-red-50"
-                            onClick={() => handleStatusChange(item.id, "NAO_LOCALIZADO")}
-                            disabled={isPending}
-                            title="Não Localizado"
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-yellow-600 hover:bg-yellow-50"
-                            onClick={() => handleStatusChange(item.id, "DIVERGENTE")}
-                            disabled={isPending}
-                            title="Divergente"
-                          >
-                            <AlertTriangle className="h-4 w-4" />
-                          </Button>
-                        </div>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tombamento</TableHead>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead>Unidade</TableHead>
+                  <TableHead>Localização</TableHead>
+                  <TableHead>Status</TableHead>
+                  {!isClosed && <TableHead className="text-right">Ações</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((item) => {
+                  const st = statusConfig[item.status];
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-mono text-sm">
+                        <Link href={`/bens/${item.bem.id}`} className="text-verde-escuro hover:underline">
+                          {item.bem.tombamento}
+                        </Link>
                       </TableCell>
-                    )}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                      <TableCell className="text-sm">{item.bem.descricao}</TableCell>
+                      <TableCell className="text-sm">{item.bem.unidade}</TableCell>
+                      <TableCell className="text-sm">{item.bem.localizacao || "—"}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className={st.className}>{st.label}</Badge>
+                      </TableCell>
+                      {!isClosed && (
+                        <TableCell className="text-right">
+                          <div className="flex gap-1 justify-end">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-green-600 hover:bg-green-50"
+                              onClick={() => handleStatusChange(item.id, "LOCALIZADO")}
+                              disabled={isPending}
+                              title="Localizado"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-600 hover:bg-red-50"
+                              onClick={() => handleStatusChange(item.id, "NAO_LOCALIZADO")}
+                              disabled={isPending}
+                              title="Não Localizado"
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-yellow-600 hover:bg-yellow-50"
+                              onClick={() => handleStatusChange(item.id, "DIVERGENTE")}
+                              disabled={isPending}
+                              title="Divergente"
+                            >
+                              <AlertTriangle className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

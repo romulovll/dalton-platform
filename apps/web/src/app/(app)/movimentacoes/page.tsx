@@ -62,43 +62,45 @@ export default async function MovimentacoesPage() {
               </Link>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Tombamento</TableHead>
-                  <TableHead>Bem</TableHead>
-                  <TableHead>Motivo</TableHead>
-                  <TableHead>Registrado por</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {movimentacoes.map((mov) => {
-                  const tipo = tipoConfig[mov.tipo];
-                  return (
-                    <TableRow key={mov.id}>
-                      <TableCell className="text-sm">
-                        {mov.data.toLocaleDateString("pt-BR")}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={tipo.className}>
-                          {tipo.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        <Link href={`/bens/${mov.bem.id}`} className="text-verde-escuro hover:underline">
-                          {mov.bem.tombamento}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-sm">{mov.bem.descricao}</TableCell>
-                      <TableCell className="text-sm max-w-xs truncate">{mov.motivo}</TableCell>
-                      <TableCell className="text-sm">{mov.usuario.nome}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Tombamento</TableHead>
+                    <TableHead>Bem</TableHead>
+                    <TableHead>Motivo</TableHead>
+                    <TableHead>Registrado por</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {movimentacoes.map((mov) => {
+                    const tipo = tipoConfig[mov.tipo];
+                    return (
+                      <TableRow key={mov.id}>
+                        <TableCell className="text-sm">
+                          {mov.data.toLocaleDateString("pt-BR")}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={tipo.className}>
+                            {tipo.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          <Link href={`/bens/${mov.bem.id}`} className="text-verde-escuro hover:underline">
+                            {mov.bem.tombamento}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-sm">{mov.bem.descricao}</TableCell>
+                        <TableCell className="text-sm max-w-xs truncate">{mov.motivo}</TableCell>
+                        <TableCell className="text-sm">{mov.usuario.nome}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

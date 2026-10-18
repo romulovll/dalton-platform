@@ -109,36 +109,38 @@ export default async function ParceriaDetailPage({
             </div>
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tombamento</TableHead>
-                    <TableHead>Descrição</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
-                    <TableHead>Situação</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {parceria.bens.map((bem) => (
-                    <TableRow key={bem.id}>
-                      <TableCell className="font-mono text-sm">
-                        <Link href={`/bens/${bem.id}`} className="text-verde-escuro hover:underline">
-                          {bem.tombamento}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-sm">{bem.descricao}</TableCell>
-                      <TableCell className="text-sm text-right">
-                        {Number(bem.valorAquisicao).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className={bem.situacao === "ATIVO" ? "bg-green-100 text-green-800" : "bg-gray-100"}>
-                          {bem.situacao}
-                        </Badge>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tombamento</TableHead>
+                      <TableHead>Descrição</TableHead>
+                      <TableHead className="text-right">Valor</TableHead>
+                      <TableHead>Situação</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {parceria.bens.map((bem) => (
+                      <TableRow key={bem.id}>
+                        <TableCell className="font-mono text-sm">
+                          <Link href={`/bens/${bem.id}`} className="text-verde-escuro hover:underline">
+                            {bem.tombamento}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-sm">{bem.descricao}</TableCell>
+                        <TableCell className="text-sm text-right">
+                          {Number(bem.valorAquisicao).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={bem.situacao === "ATIVO" ? "bg-green-100 text-green-800" : "bg-gray-100"}>
+                            {bem.situacao}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
               <div className="mt-4 text-right text-sm font-semibold">
                 Total: {totalValor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
               </div>

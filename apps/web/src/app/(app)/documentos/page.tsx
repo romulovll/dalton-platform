@@ -77,44 +77,46 @@ export default async function DocumentosPage() {
               </Link>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Ano</TableHead>
-                  <TableHead>Categoria</TableHead>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Arquivo</TableHead>
-                  <TableHead>Tamanho</TableHead>
-                  <TableHead>Publicado</TableHead>
-                  <TableHead>Enviado por</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {documentos.map((doc) => (
-                  <TableRow key={doc.id}>
-                    <TableCell className="font-mono text-sm font-semibold">{doc.ano}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                        {catLabels[doc.categoria] || doc.categoria}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm">{doc.titulo}</TableCell>
-                    <TableCell className="text-sm">
-                      <a href={doc.arquivoUrl} target="_blank" rel="noopener noreferrer" className="text-verde-escuro hover:underline">
-                        {doc.nomeArquivo}
-                      </a>
-                    </TableCell>
-                    <TableCell className="text-sm text-cinza-medio">{formatSize(doc.tamanho)}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={doc.publicado ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-                        {doc.publicado ? "Sim" : "Não"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm">{doc.usuario.nome}</TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Ano</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Arquivo</TableHead>
+                    <TableHead>Tamanho</TableHead>
+                    <TableHead>Publicado</TableHead>
+                    <TableHead>Enviado por</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {documentos.map((doc) => (
+                    <TableRow key={doc.id}>
+                      <TableCell className="font-mono text-sm font-semibold">{doc.ano}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                          {catLabels[doc.categoria] || doc.categoria}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm">{doc.titulo}</TableCell>
+                      <TableCell className="text-sm">
+                        <a href={doc.arquivoUrl} target="_blank" rel="noopener noreferrer" className="text-verde-escuro hover:underline">
+                          {doc.nomeArquivo}
+                        </a>
+                      </TableCell>
+                      <TableCell className="text-sm text-cinza-medio">{formatSize(doc.tamanho)}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className={doc.publicado ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+                          {doc.publicado ? "Sim" : "Não"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm">{doc.usuario.nome}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
