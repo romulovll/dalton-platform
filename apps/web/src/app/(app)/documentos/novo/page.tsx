@@ -15,20 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Upload, Save, FileText, AlertTriangle, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Upload, Save, FileText, ShieldCheck } from "lucide-react";
 import { createDocumento } from "@/lib/actions/documentos";
-
-interface ScanMatch {
-  tipo: string;
-  valor: string;
-  contexto: string;
-}
-
-interface ScanResult {
-  matches: ScanMatch[];
-  hasSensitiveData: boolean;
-  message: string;
-}
 
 const categorias = [
   { value: "BALANCO", label: "Balanço Patrimonial" },
@@ -48,9 +36,11 @@ const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 export default function NovoDocumentoPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const [scanning, setScanning] = useState(false);
   const [fileInfo, setFileInfo] = useState<{ url: string; name: string; size: number } | null>(null);
-  const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const [redactionInfo, setRedactionInfo] = useState<{
+    redacted: boolean;
+    redactions: { tipo: string; masked: string }[];
+  } | null>(null);
 
   const [, formAction, isPending] = useActionState(
     async (_prev: unknown, formData: FormData) => {
@@ -69,9 +59,8 @@ export default function NovoDocumentoPage() {
     if (!file) return;
 
     setUploading(true);
-    setScanResult(null);
+    setRedactionInfo(null);
     try {
-      // Upload file
       const fd = new FormData();
       fd.append("arquivo", file);
       const res = await fetch("/api/upload-documento", { method: "POST", body: fd });
@@ -82,17 +71,14 @@ export default function NovoDocumentoPage() {
       }
       setFileInfo({ url: data.arquivoUrl, name: data.nomeArquivo, size: data.tamanho });
 
-      // Scan for sensitive data (PDFs only)
-      if (file.type === "application/pdf") {
-        setScanning(true);
-        const scanFd = new FormData();
-        scanFd.append("arquivo", file);
-        const scanRes = await fetch("/api/scan-documento", { method: "POST", body: scanFd });
-        if (scanRes.ok) {
-          const scanData = await scanRes.json();
-          setScanResult(scanData);
-        }
-        setScanning(false);
+      if (data.redacted) {
+        setRedactionInfo({
+          redacted: true,
+          redactions: data.redactions.map((r: { tipo: string; masked: string }) => ({
+            tipo: r.tipo,
+            masked: r.masked,
+          })),
+        });
       }
     } catch {
       alert("Erro de conexão");
@@ -199,41 +185,33 @@ export default function NovoDocumentoPage() {
               </div>
             </div>
 
-            {/* LGPD Scan Results */}
-            {scanning && (
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 flex items-center gap-2">
-                <div className="h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                Verificando dados sensíveis (LGPD)...
+            {/* LGPD Redaction Results */}
+            {redactionInfo?.redacted && (
+              <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 text-sm text-orange-900">
+                <div className="flex items-center gap-2 font-medium mb-2">
+                  <ShieldCheck className="h-4 w-4" />
+                  Dados sensíveis detectados e mascarados automaticamente (LGPD)
+                </div>
+                <p className="text-xs text-orange-700 mb-3">
+                  O sistema gerou uma versão redijida do documento para publicação.
+                  O original foi armazenado em pasta separada (acesso restrito).
+                </p>
+                <div className="space-y-1.5">
+                  {redactionInfo.redactions.map((r, i) => (
+                    <div key={i} className="rounded bg-white/60 px-2 py-1 text-xs flex items-center gap-2">
+                      <span className="font-semibold text-orange-800">{r.tipo}:</span>
+                      <span className="font-mono">{r.masked}</span>
+                      <span className="text-orange-400">→ ***</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
-            {scanResult && !scanning && (
-              <div className={`rounded-lg border p-4 text-sm ${
-                scanResult.hasSensitiveData
-                  ? "border-red-200 bg-red-50 text-red-800"
-                  : "border-green-200 bg-green-50 text-green-800"
-              }`}>
-                <div className="flex items-center gap-2 font-medium mb-2">
-                  {scanResult.hasSensitiveData ? (
-                    <><AlertTriangle className="h-4 w-4" /> Dados Sensíveis Detectados (LGPD)</>
-                  ) : (
-                    <><ShieldCheck className="h-4 w-4" /> {scanResult.message}</>
-                  )}
-                </div>
-                {scanResult.matches.length > 0 && (
-                  <div className="space-y-2 mt-3">
-                    {scanResult.matches.map((m, i) => (
-                      <div key={i} className="rounded bg-white/60 p-2 text-xs">
-                        <span className="font-semibold">{m.tipo}:</span>{" "}
-                        <span className="font-mono">{m.valor}</span>
-                        <p className="text-gray-500 mt-0.5 truncate">...{m.contexto}...</p>
-                      </div>
-                    ))}
-                    <p className="text-xs mt-2 font-medium">
-                      Recomendação: remova ou redija esses dados antes de publicar o documento.
-                    </p>
-                  </div>
-                )}
+            {fileInfo && !redactionInfo?.redacted && !uploading && (
+              <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-800 flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4" />
+                Nenhum dado sensível detectado no documento.
               </div>
             )}
 

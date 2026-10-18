@@ -1,7 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { redactPdf } from "@/lib/pdf-redact";
 
 const GCS_BUCKET = process.env.GCS_BUCKET || "dalton-assets-uploads";
+
+async function uploadToStorage(buffer: Buffer, filename: string, contentType: string): Promise<string> {
+  if (process.env.NODE_ENV === "production" || process.env.GCS_BUCKET) {
+    const { Storage } = await import("@google-cloud/storage");
+    const storage = new Storage();
+    const bucket = storage.bucket(GCS_BUCKET);
+    const blob = bucket.file(filename);
+    await blob.save(buffer, {
+      contentType,
+      metadata: { cacheControl: "public, max-age=31536000" },
+    });
+    return `https://storage.googleapis.com/${GCS_BUCKET}/${filename}`;
+  } else {
+    const { writeFile, mkdir } = await import("fs/promises");
+    const path = await import("path");
+    const uploadDir = path.join(process.cwd(), "public", "uploads", "documentos");
+    await mkdir(uploadDir, { recursive: true });
+    const localName = filename.split("/").pop()!;
+    await writeFile(path.join(uploadDir, localName), buffer);
+    return `/uploads/documentos/${localName}`;
+  }
+}
 
 export async function POST(request: NextRequest) {
   const session = await getSession();
@@ -39,36 +62,36 @@ export async function POST(request: NextRequest) {
 
   const ext = (file.name.split(".").pop() || "pdf").toLowerCase();
   const safeExt = ext.replace(/[^a-z0-9]/g, "");
-  const filename = `documentos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
+  const ts = Date.now();
+  const rand = Math.random().toString(36).slice(2, 8);
   const buffer = Buffer.from(await file.arrayBuffer());
 
-  let arquivoUrl: string;
+  // Upload original
+  const originalFilename = `documentos/originais/${ts}-${rand}.${safeExt}`;
+  const originalUrl = await uploadToStorage(buffer, originalFilename, file.type);
 
-  if (process.env.NODE_ENV === "production" || process.env.GCS_BUCKET) {
-    const { Storage } = await import("@google-cloud/storage");
-    const storage = new Storage();
-    const bucket = storage.bucket(GCS_BUCKET);
-    const blob = bucket.file(filename);
+  // For PDFs: scan and auto-redact if sensitive data found
+  let publicUrl = originalUrl;
+  let redacted = false;
+  let redactions: { tipo: string; original: string; masked: string }[] = [];
 
-    await blob.save(buffer, {
-      contentType: file.type,
-      metadata: { cacheControl: "public, max-age=31536000" },
-    });
-
-    arquivoUrl = `https://storage.googleapis.com/${GCS_BUCKET}/${filename}`;
-  } else {
-    const { writeFile, mkdir } = await import("fs/promises");
-    const path = await import("path");
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "documentos");
-    await mkdir(uploadDir, { recursive: true });
-    const localName = `${Date.now()}.${safeExt}`;
-    await writeFile(path.join(uploadDir, localName), buffer);
-    arquivoUrl = `/uploads/documentos/${localName}`;
+  if (file.type === "application/pdf") {
+    const result = await redactPdf(buffer);
+    if (result && result.redactions.length > 0) {
+      // Upload redacted version as the public file
+      const redactedFilename = `documentos/${ts}-${rand}-redacted.pdf`;
+      publicUrl = await uploadToStorage(result.redactedPdf, redactedFilename, "application/pdf");
+      redacted = true;
+      redactions = result.redactions;
+    }
   }
 
   return NextResponse.json({
-    arquivoUrl,
+    arquivoUrl: publicUrl,
+    originalUrl,
     nomeArquivo: file.name,
     tamanho: file.size,
+    redacted,
+    redactions,
   });
 }
