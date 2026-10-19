@@ -124,8 +124,11 @@ async function generateRedactedPdf(text: string): Promise<Buffer> {
   const pageHeight = 842;
   const maxWidth = pageWidth - margin * 2;
 
+  // Sanitize all text for WinAnsi encoding before processing
+  const safeText = text.replace(/[^\x0A\x20-\x7E\xA0-\xFF]/g, " ");
+
   // Word-wrap text into lines
-  const paragraphs = text.split("\n");
+  const paragraphs = safeText.split("\n");
   const allLines: string[] = [];
 
   for (const para of paragraphs) {
@@ -178,15 +181,20 @@ async function generateRedactedPdf(text: string): Promise<Buffer> {
     for (let i = 0; i < linesPerPage && lineIndex < allLines.length; i++) {
       const line = allLines[lineIndex];
       if (line) {
-        // Replace problematic characters that pdf-lib can't encode
-        const safeLine = line.replace(/[^\x20-\x7E\xA0-\xFF]/g, " ");
-        try {
-          page.drawText(safeLine, {
-            x: margin, y, size: fontSize, font,
-            color: rgb(0.2, 0.2, 0.2),
-          });
-        } catch {
-          // Skip lines with encoding issues
+        // Strip all non-WinAnsi characters (pdf-lib uses WinAnsi encoding)
+        const safeLine = line
+          .replace(/[^\x20-\x7E\xA0-\xFF]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        if (safeLine) {
+          try {
+            page.drawText(safeLine, {
+              x: margin, y, size: fontSize, font,
+              color: rgb(0.2, 0.2, 0.2),
+            });
+          } catch {
+            // Skip lines with remaining encoding issues
+          }
         }
       }
       y -= lineHeight;
