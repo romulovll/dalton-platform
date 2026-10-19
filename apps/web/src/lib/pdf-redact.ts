@@ -221,11 +221,20 @@ async function ocrWithPositions(buffer: Buffer): Promise<OcrResultWithPositions 
                       console.log(`[OCR] First word p${pageIndex+1}: text="${wordText}", symbols=${word.symbols?.length}, boundingBox vertices=${word.boundingBox?.vertices?.length}, normalizedVertices=${word.boundingBox?.normalizedVertices?.length}`);
                     }
                     fallbackWordCount++;
+                    // Use normalizedVertices (0-1) if vertices (pixels) are empty
                     const vertices = word.boundingBox?.vertices || [];
-                    if (vertices.length < 4 || !wordText) continue;
+                    const normVertices = word.boundingBox?.normalizedVertices || [];
+                    const hasPixelCoords = vertices.length >= 4 && vertices.some(v => (v.x || 0) > 0);
+                    const coords = hasPixelCoords ? vertices : normVertices;
+                    if (coords.length < 4 || !wordText) continue;
 
-                    const xs = vertices.map(v => v.x || 0);
-                    const ys = vertices.map(v => v.y || 0);
+                    let xs = coords.map(v => v.x || 0);
+                    let ys = coords.map(v => v.y || 0);
+                    // If normalized, scale to pixel dimensions
+                    if (!hasPixelCoords) {
+                      xs = xs.map(x => x * pw);
+                      ys = ys.map(y => y * ph);
+                    }
                     const textStart = fullText.length;
                     fullText += wordText + " ";
                     const textEnd = fullText.length - 1;
