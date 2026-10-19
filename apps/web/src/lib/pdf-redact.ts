@@ -169,38 +169,66 @@ async function ocrWithPositions(buffer: Buffer): Promise<OcrResultWithPositions 
 
         for (let ri = 0; ri < responses.length; ri++) {
           const pageIndex = startPage - 1 + ri;
-          const annotation = responses[ri].fullTextAnnotation;
+          const resp = responses[ri];
+          const annotation = resp.fullTextAnnotation;
           if (!annotation) continue;
 
-          for (const p of annotation.pages || []) {
-            const pagePixelWidth = p.width || 1;
-            const pagePixelHeight = p.height || 1;
+          const pagePixelWidth = annotation.pages?.[0]?.width || 2550;
+          const pagePixelHeight = annotation.pages?.[0]?.height || 3300;
 
-            for (const block of p.blocks || []) {
-              for (const para of block.paragraphs || []) {
-                for (const word of para.words || []) {
-                  const wordText = (word.symbols || []).map(s => s.text || "").join("");
-                  const vertices = word.boundingBox?.vertices || [];
+          // Use textAnnotations for word positions (index 0 = full text, 1+ = individual words)
+          const textAnnotations = resp.textAnnotations || [];
+          if (textAnnotations.length > 1) {
+            for (let ti = 1; ti < textAnnotations.length; ti++) {
+              const ta = textAnnotations[ti];
+              const wordText = ta.description || "";
+              const vertices = ta.boundingPoly?.vertices || [];
+              if (vertices.length < 4 || !wordText) continue;
 
-                  if (vertices.length >= 4 && wordText) {
+              const xs = vertices.map(v => v.x || 0);
+              const ys = vertices.map(v => v.y || 0);
+              const textStart = fullText.length;
+              fullText += wordText + " ";
+              const textEnd = fullText.length - 1;
+
+              allWords.push({
+                text: wordText,
+                pageIndex,
+                x: Math.min(...xs),
+                y: Math.min(...ys),
+                width: Math.max(...xs) - Math.min(...xs),
+                height: Math.max(...ys) - Math.min(...ys),
+                textStart,
+                textEnd,
+                pagePixelWidth,
+                pagePixelHeight,
+              });
+            }
+          } else {
+            // Fallback: use fullTextAnnotation pages/blocks/paragraphs/words
+            for (const p of annotation.pages || []) {
+              const pw = p.width || pagePixelWidth;
+              const ph = p.height || pagePixelHeight;
+              for (const block of p.blocks || []) {
+                for (const para of block.paragraphs || []) {
+                  for (const word of para.words || []) {
+                    const wordText = (word.symbols || []).map(s => s.text || "").join("");
+                    const vertices = word.boundingBox?.vertices || [];
+                    if (vertices.length < 4 || !wordText) continue;
+
                     const xs = vertices.map(v => v.x || 0);
                     const ys = vertices.map(v => v.y || 0);
-
                     const textStart = fullText.length;
                     fullText += wordText + " ";
                     const textEnd = fullText.length - 1;
 
                     allWords.push({
-                      text: wordText,
-                      pageIndex,
-                      x: Math.min(...xs),
-                      y: Math.min(...ys),
+                      text: wordText, pageIndex,
+                      x: Math.min(...xs), y: Math.min(...ys),
                       width: Math.max(...xs) - Math.min(...xs),
                       height: Math.max(...ys) - Math.min(...ys),
-                      textStart,
-                      textEnd,
-                      pagePixelWidth,
-                      pagePixelHeight,
+                      textStart, textEnd,
+                      pagePixelWidth: pw, pagePixelHeight: ph,
                     });
                   }
                 }
