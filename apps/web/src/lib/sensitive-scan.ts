@@ -111,14 +111,26 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
     const { ImageAnnotatorClient } = await import("@google-cloud/vision");
     const client = new ImageAnnotatorClient();
 
-    const [result] = await client.documentTextDetection({
-      image: { content: buffer.toString("base64") },
-      imageContext: { languageHints: ["pt"] },
+    const [result] = await client.batchAnnotateFiles({
+      requests: [
+        {
+          inputConfig: {
+            mimeType: "application/pdf",
+            content: buffer.toString("base64"),
+          },
+          features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
+          pages: Array.from({ length: 20 }, (_, i) => i + 1), // first 20 pages
+        },
+      ],
     });
 
-    const text = result.fullTextAnnotation?.text || "";
+    const pages = result.responses?.[0]?.responses || [];
+    const text = pages
+      .map((p) => p.fullTextAnnotation?.text || "")
+      .join("\n");
+
     if (text.trim().length > 0) {
-      console.log(`[OCR] Cloud Vision extracted ${text.length} chars from scanned PDF`);
+      console.log(`[OCR] Cloud Vision extracted ${text.length} chars from ${pages.length} pages`);
       return text;
     }
   } catch (err) {

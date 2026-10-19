@@ -81,15 +81,25 @@ async function extractTextForRedaction(buffer: Buffer): Promise<string | null> {
     if (text.trim().length > 50) return text;
   } catch { /* fallback to OCR */ }
 
-  // Cloud Vision OCR
+  // Cloud Vision OCR for scanned PDFs
   try {
     const { ImageAnnotatorClient } = await import("@google-cloud/vision");
     const client = new ImageAnnotatorClient();
-    const [result] = await client.documentTextDetection({
-      image: { content: buffer.toString("base64") },
-      imageContext: { languageHints: ["pt"] },
+    const [result] = await client.batchAnnotateFiles({
+      requests: [
+        {
+          inputConfig: {
+            mimeType: "application/pdf",
+            content: buffer.toString("base64"),
+          },
+          features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
+          pages: Array.from({ length: 20 }, (_, i) => i + 1),
+        },
+      ],
     });
-    return result.fullTextAnnotation?.text || null;
+    const pages = result.responses?.[0]?.responses || [];
+    const text = pages.map((p) => p.fullTextAnnotation?.text || "").join("\n");
+    return text.trim().length > 0 ? text : null;
   } catch {
     return null;
   }
