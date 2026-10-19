@@ -6,13 +6,22 @@ interface RedactionResult {
 }
 
 const REDACT_RULES: { tipo: string; regex: RegExp }[] = [
+  // CPF: 123.456.789-01 or variations
   { tipo: "CPF", regex: /\b\d{3}[.\s]?\d{3}[.\s]?\d{3}[\/\-.\s]?\d{2}\b/g },
-  { tipo: "RG", regex: /\b\d{2}[.\s]?\d{3}[.\s]?\d{3}[-.\s]?(?:\d{1}|[xX])\b/g },
-  { tipo: "Telefone", regex: /\(?\b\d{2}\)?[\s.-]?9\d{4}[\s.-]?\d{4}\b/g },
+  // RG: 12.345.678-9 or 12.345.678-SSP/SP or just long number sequences with SSP
+  { tipo: "RG", regex: /\b\d{2}[.\s]?\d{3}[.\s]?\d{3}[-.\s]?(?:\d{1,2}|[xX])(?:[-\s]?SSP)?/gi },
+  // Phone: (18) 99744-0359 or (18) 98122-7363 or 18 99744 0359 etc
+  { tipo: "Telefone", regex: /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{4}/g },
+  // Personal email (exclude institutional domains)
   { tipo: "E-mail Pessoal", regex: /\b[a-zA-Z0-9._%+-]+@(?!institutodalton|gov\.br)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/gi },
+  // Bank account/agency
   { tipo: "Conta Bancária", regex: /(?:ag[êe]ncia|conta)[:\s]*[\d.\-/]+/gi },
+  // PIX key
   { tipo: "PIX", regex: /(?:pix|chave)[:\s]*[\w@.\-]+/gi },
+  // Date of birth: dd/mm/yyyy
   { tipo: "Data Nascimento", regex: /\b\d{2}\/\d{2}\/\d{4}\b/g },
+  // Personal address: Rua ..., nº ... / Rua: ...
+  { tipo: "Endereço Pessoal", regex: /Rua[:\s]+[^\n,]{5,60}/gi },
 ];
 
 interface OcrWord {

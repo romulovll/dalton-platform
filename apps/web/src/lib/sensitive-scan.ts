@@ -12,17 +12,17 @@ export interface SensitiveMatch {
 const patterns: { tipo: string; regex: RegExp; mask: (m: string) => string }[] = [
   {
     tipo: "CPF",
-    regex: /\b(\d{3})[.\s]?(\d{3})[.\s]?(\d{3})[\/\-.\s]?(\d{2})\b/g,
+    regex: /\b\d{3}[.\s]?\d{3}[.\s]?\d{3}[\/\-.\s]?\d{2}\b/g,
     mask: (m) => m.replace(/\d(?=.{4})/g, "*"),
   },
   {
     tipo: "RG",
-    regex: /\b(\d{2})[.\s]?(\d{3})[.\s]?(\d{3})[-.\s]?(\d{1}|[xX])\b/g,
+    regex: /\b\d{2}[.\s]?\d{3}[.\s]?\d{3}[-.\s]?(?:\d{1,2}|[xX])(?:[-\s]?SSP)?/gi,
     mask: (m) => m.replace(/\d(?=.{3})/g, "*"),
   },
   {
-    tipo: "Telefone Pessoal",
-    regex: /\(?\b(\d{2})\)?[\s.-]?(9\d{4})[\s.-]?(\d{4})\b/g,
+    tipo: "Telefone",
+    regex: /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{4}/g,
     mask: (m) => m.replace(/\d(?=.{4})/g, "*"),
   },
   {
@@ -35,18 +35,23 @@ const patterns: { tipo: string; regex: RegExp; mask: (m: string) => string }[] =
   },
   {
     tipo: "Conta Bancária",
-    regex: /\b(?:ag[êe]ncia|conta)[:\s]*[\d.\-/]+\b/gi,
+    regex: /(?:ag[êe]ncia|conta)[:\s]*[\d.\-/]+/gi,
     mask: (m) => m.replace(/\d/g, "*"),
   },
   {
-    tipo: "PIX (possível chave)",
-    regex: /\b(?:pix|chave)[:\s]*[\w@.\-]+\b/gi,
+    tipo: "PIX",
+    regex: /(?:pix|chave)[:\s]*[\w@.\-]+/gi,
     mask: (m) => m.slice(0, 8) + "***",
   },
   {
     tipo: "Data de Nascimento",
-    regex: /(?:data\s*nasc[:\s.]*|nascimento[:\s]*)(\d{2}\/\d{2}\/\d{4})/gi,
-    mask: (m) => m.replace(/\d{2}\/\d{2}\/\d{4}/, "**/**/****"),
+    regex: /\b\d{2}\/\d{2}\/\d{4}\b/g,
+    mask: (m) => "**/**/****",
+  },
+  {
+    tipo: "Endereço Pessoal",
+    regex: /Rua[:\s]+[^\n,]{5,60}/gi,
+    mask: (m) => "Rua: ***",
   },
 ];
 
