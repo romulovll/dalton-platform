@@ -175,9 +175,12 @@ async function ocrWithPositions(buffer: Buffer): Promise<OcrResultWithPositions 
 
           const pagePixelWidth = annotation.pages?.[0]?.width || 2550;
           const pagePixelHeight = annotation.pages?.[0]?.height || 3300;
+          const blocksCount = annotation.pages?.[0]?.blocks?.length || 0;
+          const wordsInFirstBlock = annotation.pages?.[0]?.blocks?.[0]?.paragraphs?.[0]?.words?.length || 0;
 
           // Use textAnnotations for word positions (index 0 = full text, 1+ = individual words)
           const textAnnotations = resp.textAnnotations || [];
+          console.log(`[OCR] p${pageIndex+1}: textAnnotations=${textAnnotations.length}, blocks=${blocksCount}, wordsInFirstBlock=${wordsInFirstBlock}, fullText=${(annotation.text || "").length} chars`);
           if (textAnnotations.length > 1) {
             for (let ti = 1; ti < textAnnotations.length; ti++) {
               const ta = textAnnotations[ti];
