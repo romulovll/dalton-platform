@@ -162,8 +162,10 @@ async function ocrWithPositions(buffer: Buffer): Promise<OcrResultWithPositions 
           }],
         });
 
+        console.log(`[OCR] Batch pages ${startPage}-${startPage+4}: result.responses length=${result.responses?.length}, inner responses=${result.responses?.[0]?.responses?.length}`);
         const responses = result.responses?.[0]?.responses || [];
         if (responses.length === 0) break;
+        console.log(`[OCR] Page responses: ${responses.map((r, i) => `p${startPage+i}: annotation=${!!r.fullTextAnnotation}, pages=${r.fullTextAnnotation?.pages?.length}`).join(", ")}`);
 
         for (let ri = 0; ri < responses.length; ri++) {
           const pageIndex = startPage - 1 + ri;
