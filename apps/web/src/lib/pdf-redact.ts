@@ -210,14 +210,21 @@ async function ocrWithPositions(buffer: Buffer): Promise<OcrResultWithPositions 
         }
 
         if (responses.length < 5) break;
-      } catch { break; }
+      } catch (batchErr) {
+        console.log(`[OCR] Batch starting at page ${startPage} ended:`, batchErr instanceof Error ? batchErr.message : "done");
+        break;
+      }
     }
 
-    if (allWords.length === 0) return null;
+    if (allWords.length === 0) {
+      console.log("[OCR] No words extracted from any page");
+      return null;
+    }
     console.log(`[OCR] Extracted ${allWords.length} words, ${fullText.length} chars`);
+    console.log(`[OCR] Sample text: ${fullText.slice(0, 200)}`);
     return { fullText, words: allWords };
   } catch (err) {
-    console.error("[OCR] Failed:", err instanceof Error ? err.message : err);
+    console.error("[OCR] Top-level failure:", err instanceof Error ? err.message : err);
     return null;
   }
 }

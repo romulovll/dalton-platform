@@ -76,7 +76,9 @@ export async function POST(request: NextRequest) {
   let redactions: { tipo: string; original: string; masked: string }[] = [];
 
   if (file.type === "application/pdf") {
+    console.log("[UPLOAD] Starting PDF scan and redaction...");
     const result = await redactPdf(buffer);
+    console.log("[UPLOAD] Redaction result:", result ? `${result.redactions.length} patterns found` : "null (no sensitive data or OCR failed)");
     if (result && result.redactions.length > 0) {
       // Upload redacted version as the public file
       const redactedFilename = `documentos/${ts}-${rand}-redacted.pdf`;
