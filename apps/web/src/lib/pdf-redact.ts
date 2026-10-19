@@ -81,25 +81,33 @@ async function extractTextForRedaction(buffer: Buffer): Promise<string | null> {
     if (text.trim().length > 50) return text;
   } catch { /* fallback to OCR */ }
 
-  // Cloud Vision OCR for scanned PDFs
+  // Cloud Vision OCR for scanned PDFs (5 pages per call limit)
   try {
     const { ImageAnnotatorClient } = await import("@google-cloud/vision");
     const client = new ImageAnnotatorClient();
-    const [result] = await client.batchAnnotateFiles({
-      requests: [
-        {
-          inputConfig: {
-            mimeType: "application/pdf",
-            content: buffer.toString("base64"),
-          },
-          features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
-          pages: Array.from({ length: 20 }, (_, i) => i + 1),
-        },
-      ],
-    });
-    const pages = result.responses?.[0]?.responses || [];
-    const text = pages.map((p) => p.fullTextAnnotation?.text || "").join("\n");
-    return text.trim().length > 0 ? text : null;
+    const content = buffer.toString("base64");
+    let allText = "";
+
+    for (let startPage = 1; startPage <= 50; startPage += 5) {
+      const pages = Array.from({ length: 5 }, (_, i) => startPage + i);
+      try {
+        const [result] = await client.batchAnnotateFiles({
+          requests: [{
+            inputConfig: { mimeType: "application/pdf", content },
+            features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
+            pages,
+          }],
+        });
+        const responses = result.responses?.[0]?.responses || [];
+        if (responses.length === 0) break;
+        for (const r of responses) {
+          allText += (r.fullTextAnnotation?.text || "") + "\n";
+        }
+        if (responses.length < 5) break;
+      } catch { break; }
+    }
+
+    return allText.trim().length > 0 ? allText : null;
   } catch {
     return null;
   }

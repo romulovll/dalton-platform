@@ -110,28 +110,40 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
   try {
     const { ImageAnnotatorClient } = await import("@google-cloud/vision");
     const client = new ImageAnnotatorClient();
+    const content = buffer.toString("base64");
+    let allText = "";
 
-    const [result] = await client.batchAnnotateFiles({
-      requests: [
-        {
-          inputConfig: {
-            mimeType: "application/pdf",
-            content: buffer.toString("base64"),
-          },
-          features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
-          pages: Array.from({ length: 20 }, (_, i) => i + 1), // first 20 pages
-        },
-      ],
-    });
+    // Cloud Vision limits to 5 pages per call — batch in chunks
+    for (let startPage = 1; startPage <= 50; startPage += 5) {
+      const pages = Array.from({ length: 5 }, (_, i) => startPage + i);
 
-    const pages = result.responses?.[0]?.responses || [];
-    const text = pages
-      .map((p) => p.fullTextAnnotation?.text || "")
-      .join("\n");
+      try {
+        const [result] = await client.batchAnnotateFiles({
+          requests: [
+            {
+              inputConfig: { mimeType: "application/pdf", content },
+              features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
+              pages,
+            },
+          ],
+        });
 
-    if (text.trim().length > 0) {
-      console.log(`[OCR] Cloud Vision extracted ${text.length} chars from ${pages.length} pages`);
-      return text;
+        const responses = result.responses?.[0]?.responses || [];
+        if (responses.length === 0) break; // no more pages
+
+        for (const r of responses) {
+          allText += (r.fullTextAnnotation?.text || "") + "\n";
+        }
+
+        if (responses.length < 5) break; // last batch
+      } catch {
+        break; // page range exceeded total pages
+      }
+    }
+
+    if (allText.trim().length > 0) {
+      console.log(`[OCR] Cloud Vision extracted ${allText.length} chars`);
+      return allText;
     }
   } catch (err) {
     console.error("[OCR] Cloud Vision failed:", err instanceof Error ? err.message : err);
