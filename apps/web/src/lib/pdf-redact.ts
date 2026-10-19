@@ -209,6 +209,7 @@ async function ocrWithPositions(buffer: Buffer): Promise<OcrResultWithPositions 
             }
           } else {
             // Fallback: use fullTextAnnotation pages/blocks/paragraphs/words
+            let fallbackWordCount = 0;
             for (const p of annotation.pages || []) {
               const pw = p.width || pagePixelWidth;
               const ph = p.height || pagePixelHeight;
@@ -216,6 +217,10 @@ async function ocrWithPositions(buffer: Buffer): Promise<OcrResultWithPositions 
                 for (const para of block.paragraphs || []) {
                   for (const word of para.words || []) {
                     const wordText = (word.symbols || []).map(s => s.text || "").join("");
+                    if (fallbackWordCount === 0) {
+                      console.log(`[OCR] First word p${pageIndex+1}: text="${wordText}", symbols=${word.symbols?.length}, boundingBox vertices=${word.boundingBox?.vertices?.length}, normalizedVertices=${word.boundingBox?.normalizedVertices?.length}`);
+                    }
+                    fallbackWordCount++;
                     const vertices = word.boundingBox?.vertices || [];
                     if (vertices.length < 4 || !wordText) continue;
 
