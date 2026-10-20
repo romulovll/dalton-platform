@@ -13,8 +13,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, FileText, ExternalLink } from "lucide-react";
-import { getDocumentos } from "@/lib/actions/documentos";
+import { Plus, FileText, ExternalLink, Trash2 } from "lucide-react";
+import { getDocumentos, deleteDocumento } from "@/lib/actions/documentos";
 
 const catLabels: Record<string, string> = {
   BALANCO: "Balanço Patrimonial",
@@ -86,6 +86,7 @@ export default async function DocumentosPage() {
                     <TableHead>Título / Arquivo</TableHead>
                     <TableHead className="hidden md:table-cell">Tamanho</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -108,6 +109,22 @@ export default async function DocumentosPage() {
                         <Badge variant="secondary" className={doc.publicado ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
                           {doc.publicado ? "Publicado" : "Interno"}
                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Link
+                            href={`/documentos/${doc.id}/editar`}
+                            className="text-sm text-verde-escuro hover:underline"
+                          >
+                            Editar
+                          </Link>
+                          <form action={async () => { "use server"; await deleteDocumento(doc.id); }}>
+                            <button type="submit" className="text-sm text-red-600 hover:underline flex items-center gap-1">
+                              <Trash2 className="h-3 w-3" />
+                              Excluir
+                            </button>
+                          </form>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

@@ -36,6 +36,7 @@ const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 export default function NovoDocumentoPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadStep, setUploadStep] = useState("");
   const [fileInfo, setFileInfo] = useState<{ url: string; name: string; size: number } | null>(null);
   const [redactionInfo, setRedactionInfo] = useState<{
     redacted: boolean;
@@ -59,10 +60,23 @@ export default function NovoDocumentoPage() {
     if (!file) return;
 
     setUploading(true);
+    setUploadStep("Enviando arquivo...");
     setRedactionInfo(null);
+    setFileInfo(null);
     try {
       const fd = new FormData();
       fd.append("arquivo", file);
+
+      // Show progress steps
+      const isPdf = file.type === "application/pdf";
+      if (isPdf) {
+        setTimeout(() => setUploadStep("Enviando arquivo para o servidor..."), 0);
+        setTimeout(() => setUploadStep("Lendo documento com OCR..."), 5000);
+        setTimeout(() => setUploadStep("Analisando dados sensíveis (IA)..."), 15000);
+        setTimeout(() => setUploadStep("Gerando versão redijida..."), 30000);
+        setTimeout(() => setUploadStep("Finalizando processamento..."), 60000);
+      }
+
       const res = await fetch("/api/upload-documento", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) {
@@ -81,9 +95,10 @@ export default function NovoDocumentoPage() {
         });
       }
     } catch {
-      alert("Erro de conexão");
+      alert("Erro de conexão. Tente novamente.");
     } finally {
       setUploading(false);
+      setUploadStep("");
     }
   }
 
@@ -165,7 +180,20 @@ export default function NovoDocumentoPage() {
               <Label>Arquivo *</Label>
               <div className="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center">
                 <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onChange={handleFileUpload} className="hidden" />
-                {fileInfo ? (
+                {uploading ? (
+                  <div className="py-4">
+                    <div className="flex items-center justify-center gap-3 mb-3">
+                      <div className="h-6 w-6 border-3 border-verde-escuro border-t-transparent rounded-full animate-spin" />
+                      <p className="text-sm font-medium text-verde-escuro">{uploadStep}</p>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="bg-verde-escuro h-1.5 rounded-full animate-pulse" style={{ width: "60%" }} />
+                    </div>
+                    <p className="text-xs text-cinza-medio mt-2">
+                      PDFs escaneados podem levar até 2 minutos (OCR + análise LGPD)
+                    </p>
+                  </div>
+                ) : fileInfo ? (
                   <div className="flex items-center justify-center gap-3">
                     <FileText className="h-8 w-8 text-verde-medio" />
                     <div className="text-left">
@@ -177,8 +205,8 @@ export default function NovoDocumentoPage() {
                   <>
                     <Upload className="mx-auto h-8 w-8 text-cinza-medio mb-2" />
                     <p className="text-sm text-cinza-medio mb-2">PDF, Word, Excel ou imagem (máx. 20MB)</p>
-                    <Button type="button" variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
-                      {uploading ? "Enviando..." : "Selecionar Arquivo"}
+                    <Button type="button" variant="outline" onClick={() => fileRef.current?.click()}>
+                      Selecionar Arquivo
                     </Button>
                   </>
                 )}
