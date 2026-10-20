@@ -121,8 +121,41 @@ export async function redactPdf(originalBuffer: Buffer): Promise<RedactionResult
     }
   }
 
-  console.log(`[REDACT] DLP found ${dlpFindings.length}, regex added more. Total words to redact: ${wordIndicesToRedact.size}`);
-  if (redactions.length === 0) return null;
+  // Remove false positives — institutional/public data that should NOT be redacted
+  const INSTITUTIONAL_WHITELIST = [
+    "instituto", "dalton", "salomão", "salomao",
+    // Instituto address (public)
+    "josé", "jose", "oliveira", "13-72", "1372",
+    "vila", "esperança", "esperanca", "19472", "376",
+    // Instituto phone/email (public)
+    "3281", "1942", "institutodalton",
+    // Instituto CNPJ (public)
+    "10.204", "553", "0001",
+    // Motto
+    "futuro", "faz", "amor",
+    // Company names in transactions (not personal)
+    "consermaq", "quirino", "energisa", "sul-sudeste", "sudeste",
+    "rfb-darf", "darf", "codigo", "barras", "impostos",
+    "confeccoes", "comercio", "boleto", "pagamento",
+    "cef", "matriz", "saldo", "juros", "iof",
+    "transferência", "transferencia", "enviado", "tarifa",
+    "agrupadas", "ocorrencia",
+  ];
+
+  for (const idx of Array.from(wordIndicesToRedact)) {
+    const word = ocrResult.words[idx];
+    const lower = word.text.toLowerCase().replace(/[^\w\sáàâãéèêíïóôõöúçñ]/g, "");
+    if (lower.length < 2) {
+      wordIndicesToRedact.delete(idx);
+      continue;
+    }
+    if (INSTITUTIONAL_WHITELIST.some(w => lower === w || lower.includes(w))) {
+      wordIndicesToRedact.delete(idx);
+    }
+  }
+
+  console.log(`[REDACT] DLP found ${dlpFindings.length}, regex added more. After whitelist: ${wordIndicesToRedact.size} words to redact`);
+  if (wordIndicesToRedact.size === 0) return null;
 
   // Load original PDF and overlay redactions
   const doc = await PDFDocument.load(originalBuffer);
