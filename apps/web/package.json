@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
+    "@google-cloud/dlp": "^7.2.0",
     "@google-cloud/storage": "^8.2.0",
     "@google-cloud/vision": "^6.2.0",
     "@prisma/client": "^6.19.3",

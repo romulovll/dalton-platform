@@ -53,26 +53,55 @@ export async function redactPdf(originalBuffer: Buffer): Promise<RedactionResult
   const ocrResult = await ocrWithPositions(originalBuffer);
   if (!ocrResult || ocrResult.words.length === 0) return null;
 
-  // Find sensitive data matches
+  // Use Cloud DLP AI to detect sensitive data
+  const { dlpScanText } = await import("./dlp-scan");
+  const dlpFindings = await dlpScanText(ocrResult.fullText);
+
+  // Also run regex as fallback for patterns DLP might miss
   const redactions: { tipo: string; original: string; masked: string }[] = [];
   const wordIndicesToRedact = new Set<number>();
   const seen = new Set<string>();
 
+  // Process DLP findings
+  for (const finding of dlpFindings) {
+    const key = `${finding.tipo}:${finding.valor}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    redactions.push({ tipo: finding.tipo, original: finding.valor, masked: "***" });
+
+    // Find OCR words that overlap with this DLP finding
+    // DLP returns byte offsets, but our fullText is character-based
+    // Search for the quote in the fullText to find character positions
+    const quote = finding.valor.replace(/\.\.\.$/, ""); // remove truncation
+    let searchStart = 0;
+    let idx;
+    while ((idx = ocrResult.fullText.indexOf(quote, searchStart)) !== -1) {
+      const matchEnd = idx + quote.length;
+      for (let i = 0; i < ocrResult.words.length; i++) {
+        const w = ocrResult.words[i];
+        if (w.textStart < matchEnd && w.textEnd > idx) {
+          wordIndicesToRedact.add(i);
+        }
+      }
+      searchStart = idx + 1;
+      if (searchStart > idx + quote.length) break; // avoid infinite loop
+    }
+  }
+
+  // Regex fallback for patterns DLP might miss
   for (const rule of REDACT_RULES) {
     const regex = new RegExp(rule.regex.source, rule.regex.flags);
     let match;
     while ((match = regex.exec(ocrResult.fullText)) !== null) {
       const raw = match[0];
-      const key = `${rule.tipo}:${raw}`;
+      const key = `regex:${rule.tipo}:${raw}`;
       if (seen.has(key)) continue;
       seen.add(key);
 
-      const masked = raw.length <= 4
-        ? "***"
-        : raw.slice(0, 2) + "*".repeat(raw.length - 4) + raw.slice(-2);
+      const masked = raw.length <= 4 ? "***" : raw.slice(0, 2) + "*".repeat(Math.max(raw.length - 4, 1)) + raw.slice(-2);
       redactions.push({ tipo: rule.tipo, original: raw, masked });
 
-      // Find overlapping OCR words
       const matchStart = match.index;
       const matchEnd = matchStart + raw.length;
       for (let i = 0; i < ocrResult.words.length; i++) {
@@ -84,6 +113,7 @@ export async function redactPdf(originalBuffer: Buffer): Promise<RedactionResult
     }
   }
 
+  console.log(`[REDACT] DLP found ${dlpFindings.length}, regex added more. Total words to redact: ${wordIndicesToRedact.size}`);
   if (redactions.length === 0) return null;
 
   // Load original PDF and overlay redactions
