@@ -30,6 +30,14 @@ const REDACT_RULES: { tipo: string; regex: RegExp }[] = [
   { tipo: "CPF Label", regex: /CPF[:\s]*\S+/gi },
   // RG: prefix + number
   { tipo: "RG Label", regex: /RG[:\s]*\S+/gi },
+  // Bank account numbers (long digit sequences with dots): 550.971.000.029.136
+  { tipo: "Conta Bancária", regex: /\d{3}\.\d{3}\.\d{3}\.\d{3}\.\d{3}/g },
+  // Names after timestamps in bank statements: "29/12 12:00 ANA CARLA MACIEL VILELA"
+  { tipo: "Nome em Extrato", regex: /\d{2}\/\d{2}\s+\d{2}:\d{2}\s+[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ][A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s]{5,}/g },
+  // Full names in CAPS (3+ words, all uppercase): "LAURA DE AGUIAR LANGHI"
+  { tipo: "Nome Pessoal", regex: /\b[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]{2,}(?:\s+(?:DE|DA|DO|DOS|DAS|E)\s+|\s+)[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]{2,}(?:(?:\s+(?:DE|DA|DO|DOS|DAS|E)\s+|\s+)[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]{2,})+/g },
+  // Transaction/reference IDs
+  { tipo: "ID Transação", regex: /\b[A-Z]{2}\d{6,}\b/g },
 ];
 
 interface OcrWord {

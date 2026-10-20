@@ -73,6 +73,26 @@ const patterns: { tipo: string; regex: RegExp; mask: (m: string) => string }[] =
     regex: /Data\s*Nasc[:\s.]*\S+/gi,
     mask: () => "Data Nasc: ***",
   },
+  {
+    tipo: "Conta Bancária",
+    regex: /\d{3}\.\d{3}\.\d{3}\.\d{3}\.\d{3}/g,
+    mask: (m) => m.replace(/\d/g, "*"),
+  },
+  {
+    tipo: "Nome em Extrato",
+    regex: /\d{2}\/\d{2}\s+\d{2}:\d{2}\s+[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ][A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ\s]{5,}/g,
+    mask: () => "***",
+  },
+  {
+    tipo: "Nome Pessoal",
+    regex: /\b[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]{2,}(?:\s+(?:DE|DA|DO|DOS|DAS|E)\s+|\s+)[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]{2,}(?:(?:\s+(?:DE|DA|DO|DOS|DAS|E)\s+|\s+)[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ]{2,})+/g,
+    mask: () => "***",
+  },
+  {
+    tipo: "ID Transação",
+    regex: /\b[A-Z]{2}\d{6,}\b/g,
+    mask: (m) => m.replace(/\d/g, "*"),
+  },
 ];
 
 function getContext(text: string, index: number, length: number): string {
