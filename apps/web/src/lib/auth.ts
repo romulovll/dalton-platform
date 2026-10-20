@@ -9,7 +9,7 @@ function getSecret() {
 }
 
 const SESSION_COOKIE = "dalton_session";
-const SESSION_DURATION = 30 * 60; // 30 minutes in seconds
+const SESSION_DURATION = 10 * 60; // 10 minutes in seconds
 
 export interface SessionPayload {
   userId: string;
