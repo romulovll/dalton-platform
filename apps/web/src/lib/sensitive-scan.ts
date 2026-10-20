@@ -12,29 +12,29 @@ export interface SensitiveMatch {
 const patterns: { tipo: string; regex: RegExp; mask: (m: string) => string }[] = [
   {
     tipo: "CPF",
-    regex: /\b\d{3}[.\s]?\d{3}[.\s]?\d{3}[\/\-.\s]?\d{2}\b/g,
+    regex: /\d{3}[.\s]?\d{3}[.\s]?\d{3}[\/\-.\s]?\d{2}/g,
     mask: (m) => m.replace(/\d(?=.{4})/g, "*"),
   },
   {
     tipo: "RG",
-    regex: /\b\d{2}[.\s]?\d{3}[.\s]?\d{3}[-.\s]?(?:\d{1,2}|[xX])(?:[-\s]?SSP)?/gi,
+    regex: /\d{2}[.\s]?\d{3}[.\s]?\d{3}[-.\s]?\d{1,2}[-.\s]?(?:SSP)?[\/\s]?(?:SP)?/gi,
     mask: (m) => m.replace(/\d(?=.{3})/g, "*"),
   },
   {
     tipo: "Telefone",
-    regex: /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{4}/g,
+    regex: /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{3,4}/g,
     mask: (m) => m.replace(/\d(?=.{4})/g, "*"),
   },
   {
-    tipo: "E-mail Pessoal",
-    regex: /\b[a-zA-Z0-9._%+-]+@(?!institutodalton|gov\.br)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/gi,
+    tipo: "E-mail",
+    regex: /[a-zA-Z0-9._%+-]+@(?!institutodalton|gov\.br)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi,
     mask: (m) => {
       const [user, domain] = m.split("@");
       return `${user[0]}***@${domain}`;
     },
   },
   {
-    tipo: "Conta Bancária",
+    tipo: "Conta",
     regex: /(?:ag[êe]ncia|conta)[:\s]*[\d.\-/]+/gi,
     mask: (m) => m.replace(/\d/g, "*"),
   },
@@ -44,14 +44,34 @@ const patterns: { tipo: string; regex: RegExp; mask: (m: string) => string }[] =
     mask: (m) => m.slice(0, 8) + "***",
   },
   {
-    tipo: "Data de Nascimento",
-    regex: /\b\d{2}\/\d{2}\/\d{4}\b/g,
-    mask: (m) => "**/**/****",
+    tipo: "Data",
+    regex: /\d{2}\/\d{2}\/\d{4}/g,
+    mask: () => "**/**/****",
   },
   {
-    tipo: "Endereço Pessoal",
-    regex: /Rua[:\s]+[^\n,]{5,60}/gi,
-    mask: (m) => "Rua: ***",
+    tipo: "Endereço",
+    regex: /(?:Rua|Av\.|Avenida|Alameda|Travessa|Pra[cç]a)[:\s]+[^\n]{5,80}/gi,
+    mask: () => "Rua: ***",
+  },
+  {
+    tipo: "CEP",
+    regex: /\d{5}[-.\s]?\d{3}/g,
+    mask: (m) => m.replace(/\d/g, "*"),
+  },
+  {
+    tipo: "CPF Label",
+    regex: /CPF[:\s]*\S+/gi,
+    mask: () => "CPF: ***",
+  },
+  {
+    tipo: "RG Label",
+    regex: /RG[:\s]*\S+/gi,
+    mask: () => "RG: ***",
+  },
+  {
+    tipo: "Data Nasc",
+    regex: /Data\s*Nasc[:\s.]*\S+/gi,
+    mask: () => "Data Nasc: ***",
   },
 ];
 

@@ -6,22 +6,30 @@ interface RedactionResult {
 }
 
 const REDACT_RULES: { tipo: string; regex: RegExp }[] = [
-  // CPF: 123.456.789-01 or variations
-  { tipo: "CPF", regex: /\b\d{3}[.\s]?\d{3}[.\s]?\d{3}[\/\-.\s]?\d{2}\b/g },
-  // RG: 12.345.678-9 or 12.345.678-SSP/SP or just long number sequences with SSP
-  { tipo: "RG", regex: /\b\d{2}[.\s]?\d{3}[.\s]?\d{3}[-.\s]?(?:\d{1,2}|[xX])(?:[-\s]?SSP)?/gi },
-  // Phone: (18) 99744-0359 or (18) 98122-7363 or 18 99744 0359 etc
-  { tipo: "Telefone", regex: /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{4}/g },
+  // CPF: 123.456.789-01, 123 456 789 01, etc
+  { tipo: "CPF", regex: /\d{3}[.\s]?\d{3}[.\s]?\d{3}[\/\-.\s]?\d{2}/g },
+  // RG: various formats with SSP, dots, dashes
+  { tipo: "RG", regex: /\d{2}[.\s]?\d{3}[.\s]?\d{3}[-.\s]?\d{1,2}[-.\s]?(?:SSP)?[\/\s]?(?:SP)?/gi },
+  // Phone: any (XX) XXXXX-XXXX or XX XXXXX XXXX pattern (landline + mobile)
+  { tipo: "Telefone", regex: /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{3,4}/g },
   // Personal email (exclude institutional domains)
-  { tipo: "E-mail Pessoal", regex: /\b[a-zA-Z0-9._%+-]+@(?!institutodalton|gov\.br)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/gi },
+  { tipo: "E-mail", regex: /[a-zA-Z0-9._%+-]+@(?!institutodalton|gov\.br)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi },
   // Bank account/agency
-  { tipo: "Conta Bancária", regex: /(?:ag[êe]ncia|conta)[:\s]*[\d.\-/]+/gi },
+  { tipo: "Conta", regex: /(?:ag[êe]ncia|conta)[:\s]*[\d.\-/]+/gi },
   // PIX key
   { tipo: "PIX", regex: /(?:pix|chave)[:\s]*[\w@.\-]+/gi },
-  // Date of birth: dd/mm/yyyy
-  { tipo: "Data Nascimento", regex: /\b\d{2}\/\d{2}\/\d{4}\b/g },
-  // Personal address: Rua ..., nº ... / Rua: ...
-  { tipo: "Endereço Pessoal", regex: /Rua[:\s]+[^\n,]{5,60}/gi },
+  // Any date: dd/mm/yyyy
+  { tipo: "Data", regex: /\d{2}\/\d{2}\/\d{4}/g },
+  // Personal address: Rua ..., Av ..., Alameda ..., etc
+  { tipo: "Endereço", regex: /(?:Rua|Av\.|Avenida|Alameda|Travessa|Pra[cç]a)[:\s]+[^\n]{5,80}/gi },
+  // CEP
+  { tipo: "CEP", regex: /\d{5}[-.\s]?\d{3}/g },
+  // Data Nasc prefix + date
+  { tipo: "Data Nasc", regex: /Data\s*Nasc[:\s.]*\S+/gi },
+  // CPF: prefix + number
+  { tipo: "CPF Label", regex: /CPF[:\s]*\S+/gi },
+  // RG: prefix + number
+  { tipo: "RG Label", regex: /RG[:\s]*\S+/gi },
 ];
 
 interface OcrWord {
@@ -277,7 +285,15 @@ async function ocrWithPositions(buffer: Buffer): Promise<OcrResultWithPositions 
       return null;
     }
     console.log(`[OCR] Extracted ${allWords.length} words, ${fullText.length} chars`);
-    console.log(`[OCR] Sample text: ${fullText.slice(0, 200)}`);
+
+    // Log what patterns match in the extracted text for debugging
+    for (const rule of REDACT_RULES) {
+      const regex = new RegExp(rule.regex.source, rule.regex.flags);
+      const matches = fullText.match(regex) || [];
+      if (matches.length > 0) {
+        console.log(`[OCR] Pattern "${rule.tipo}": ${matches.length} matches — ${matches.slice(0, 3).join(", ")}`);
+      }
+    }
     return { fullText, words: allWords };
   } catch (err) {
     console.error("[OCR] Top-level failure:", err instanceof Error ? err.message : err);
