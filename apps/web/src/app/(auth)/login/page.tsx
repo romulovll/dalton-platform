@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
+import { useActionState, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
+import { useRouter } from "next/navigation";
 import { loginAction } from "@/lib/actions/auth";
 
 const RECAPTCHA_SITE_KEY = "6Lci9PktAAAAAPYDaJbvx7EjNAt8GtMGce6DpXcJ";
+const GOOGLE_CLIENT_ID = "20602711487-bva0pusuou57sg2pg7o3hfbrjvaogo65.apps.googleusercontent.com";
 
 declare global {
   interface Window {
@@ -16,27 +18,54 @@ declare global {
         execute: (key: string, opts: { action: string }) => Promise<string>;
       };
     };
+    handleGoogleSignIn: (response: { credential: string }) => void;
   }
 }
 
 export default function LoginPage() {
   const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
-      // Get reCAPTCHA token
       try {
         const token = await window.grecaptcha.enterprise.execute(RECAPTCHA_SITE_KEY, {
           action: "LOGIN",
         });
         formData.set("recaptcha_token", token);
-      } catch {
-        // reCAPTCHA failed — still allow login (graceful degradation)
-      }
+      } catch { /* graceful */ }
       return loginAction(formData);
     },
     null
   );
+
+  const [googleState, setGoogleState] = useActionState(
+    async (_prev: { error?: string } | null, formData: FormData) => {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: formData.get("credential") }),
+      });
+      const data = await res.json();
+      if (data.error) return { error: data.error };
+      router.push("/painel");
+      return null;
+    },
+    null
+  );
+
+  const handleGoogleCallback = useCallback((response: { credential: string }) => {
+    const fd = new FormData();
+    fd.set("credential", response.credential);
+    setGoogleState(fd);
+  }, [setGoogleState]);
+
+  // Register global callback for Google Sign-In
+  if (typeof window !== "undefined") {
+    window.handleGoogleSignIn = handleGoogleCallback;
+  }
+
+  const error = state?.error || googleState?.error;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-cinza-claro">
@@ -44,6 +73,8 @@ export default function LoginPage() {
         src={`https://www.google.com/recaptcha/enterprise.js?render=${RECAPTCHA_SITE_KEY}`}
         strategy="afterInteractive"
       />
+      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
+
       <div className="w-full max-w-md mx-4">
         <div className="rounded-2xl bg-white p-8 shadow-lg border border-gray-100">
           {/* Logo */}
@@ -66,13 +97,42 @@ export default function LoginPage() {
           </div>
 
           {/* Error message */}
-          {state?.error && (
+          {error && (
             <div className="mb-4 rounded-lg bg-vermelho/10 border border-vermelho/20 px-4 py-3 text-sm text-vermelho">
-              {state.error}
+              {error}
             </div>
           )}
 
-          {/* Form */}
+          {/* Google Sign-In */}
+          <div className="mb-4">
+            <div
+              id="g_id_onload"
+              data-client_id={GOOGLE_CLIENT_ID}
+              data-callback="handleGoogleSignIn"
+              data-auto_prompt="false"
+            />
+            <div
+              className="g_id_signin flex justify-center"
+              data-type="standard"
+              data-shape="rectangular"
+              data-theme="outline"
+              data-text="signin_with"
+              data-size="large"
+              data-logo_alignment="left"
+              data-width="360"
+            />
+          </div>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-white px-3 text-cinza-medio">ou com e-mail e senha</span>
+            </div>
+          </div>
+
+          {/* Email/Password Form */}
           <form ref={formRef} action={formAction} className="space-y-4">
             <div>
               <label
@@ -118,7 +178,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-4 text-center text-xs text-cinza-medio">
-            <p>Utilize as credenciais fornecidas pelo administrador.</p>
+            <p>Acesso restrito a usuários cadastrados pelo administrador.</p>
           </div>
 
           <div className="mt-6 text-center">

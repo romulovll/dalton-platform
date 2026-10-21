@@ -11,6 +11,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@auth/core": "^0.41.3",
     "@base-ui/react": "^1.8.0",
     "@google-cloud/dlp": "^7.2.0",
     "@google-cloud/storage": "^8.2.0",
@@ -20,6 +21,7 @@
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
+    "google-auth-library": "^11.3.1",
     "jose": "^6.2.12",
     "lucide-react": "^1.50.0",
     "motion": "^14.0.0",
