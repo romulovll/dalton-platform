@@ -12,7 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Users2, UserPlus, CalendarCheck } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ArrowLeft, Users2, UserPlus, CalendarCheck, FileBarChart } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 import {
   getAtividade,
   addParticipanteToAtividade,
@@ -245,6 +254,112 @@ export default async function AtividadeDetailPage({
           )}
         </CardContent>
       </Card>
+      {/* Attendance report */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <FileBarChart className="h-5 w-5 text-verde-medio" />
+            Relatório de Presença
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AttendanceReport atividadeId={id} />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+async function AttendanceReport({ atividadeId }: { atividadeId: string }) {
+  const presencas = await prisma.presenca.findMany({
+    where: { atividadeId },
+    include: { participante: { select: { nome: true } } },
+  });
+
+  if (presencas.length === 0) {
+    return (
+      <div className="text-center py-6 text-cinza-medio">
+        Nenhuma presença registrada para esta atividade.
+      </div>
+    );
+  }
+
+  // Stats
+  const datas = new Set(presencas.map((p) => p.data.toISOString().split("T")[0]));
+  const totalPresentes = presencas.filter((p) => p.presente).length;
+  const taxaGeral = Math.round((totalPresentes / presencas.length) * 100);
+
+  // Per participant
+  const byParticipante = new Map<string, { nome: string; total: number; presentes: number }>();
+  for (const p of presencas) {
+    const key = p.participanteId;
+    const existing = byParticipante.get(key) || { nome: p.participante.nome, total: 0, presentes: 0 };
+    existing.total++;
+    if (p.presente) existing.presentes++;
+    byParticipante.set(key, existing);
+  }
+
+  const participanteStats = Array.from(byParticipante.values())
+    .map((p) => ({ ...p, taxa: p.total > 0 ? Math.round((p.presentes / p.total) * 100) : 0 }))
+    .sort((a, b) => a.nome.localeCompare(b.nome));
+
+  return (
+    <div className="space-y-4">
+      {/* Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="border rounded p-3 text-center">
+          <p className="text-xs text-cinza-medio">Dias de Chamada</p>
+          <p className="text-xl font-bold">{datas.size}</p>
+        </div>
+        <div className="border rounded p-3 text-center">
+          <p className="text-xs text-cinza-medio">Total Registros</p>
+          <p className="text-xl font-bold">{presencas.length}</p>
+        </div>
+        <div className="border rounded p-3 text-center">
+          <p className="text-xs text-cinza-medio">Presenças</p>
+          <p className="text-xl font-bold text-green-600">{totalPresentes}</p>
+        </div>
+        <div className="border rounded p-3 text-center">
+          <p className="text-xs text-cinza-medio">Taxa Geral</p>
+          <p className={`text-xl font-bold ${taxaGeral >= 80 ? "text-green-600" : taxaGeral >= 50 ? "text-yellow-600" : "text-red-600"}`}>
+            {taxaGeral}%
+          </p>
+        </div>
+      </div>
+
+      {/* Per participant */}
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Participante</TableHead>
+              <TableHead className="text-center">Chamadas</TableHead>
+              <TableHead className="text-center">Presentes</TableHead>
+              <TableHead className="text-center">Ausentes</TableHead>
+              <TableHead className="text-center">Taxa</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {participanteStats.map((p) => (
+              <TableRow key={p.nome}>
+                <TableCell className="font-medium">{p.nome}</TableCell>
+                <TableCell className="text-center">{p.total}</TableCell>
+                <TableCell className="text-center text-green-600">{p.presentes}</TableCell>
+                <TableCell className="text-center text-red-600">{p.total - p.presentes}</TableCell>
+                <TableCell className="text-center">
+                  <Badge variant="secondary" className={
+                    p.taxa >= 80 ? "bg-green-100 text-green-800" :
+                    p.taxa >= 50 ? "bg-yellow-100 text-yellow-800" :
+                    "bg-red-100 text-red-800"
+                  }>
+                    {p.taxa}%
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
