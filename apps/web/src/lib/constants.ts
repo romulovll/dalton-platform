@@ -148,6 +148,7 @@ export const PERFIS_ACESSO = [
   { value: "admin_geral", label: "Administrador Geral" },
   { value: "admin_unidade", label: "Administrador de Unidade" },
   { value: "gestor", label: "Gestor Patrimonial" },
+  { value: "professor", label: "Professor / Educador" },
   { value: "responsavel_setor", label: "Responsável de Setor" },
   { value: "contador", label: "Contador" },
   { value: "auditor", label: "Auditor" },
@@ -164,4 +165,43 @@ export const UFS_BRASIL = [
   "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
   "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
   "RS", "RO", "RR", "SC", "SP", "SE", "TO",
+] as const;
+
+// Presença module constants
+export const PUBLICOS_ALVO = [
+  { value: "CRIANCAS", label: "Crianças" },
+  { value: "IDOSOS", label: "Idosos" },
+  { value: "AMBOS", label: "Ambos" },
+] as const;
+
+export const SITUACOES_PARTICIPANTE = [
+  { value: "ATIVO", label: "Ativo" },
+  { value: "INATIVO", label: "Inativo" },
+  { value: "TRANSFERIDO", label: "Transferido" },
+] as const;
+
+export const TIPOS_IMOVEL = [
+  { value: "PROPRIO", label: "Próprio" },
+  { value: "ALUGADO", label: "Alugado" },
+  { value: "CEDIDO", label: "Cedido" },
+  { value: "OUTRO", label: "Outro" },
+] as const;
+
+export const PARENTESCOS = [
+  { value: "mae", label: "Mãe" },
+  { value: "pai", label: "Pai" },
+  { value: "avo", label: "Avó/Avô" },
+  { value: "tio", label: "Tio/Tia" },
+  { value: "irmao", label: "Irmão/Irmã" },
+  { value: "primo", label: "Primo/Prima" },
+  { value: "padrasto", label: "Padrasto/Madrasta" },
+  { value: "vizinho", label: "Vizinho/a" },
+  { value: "outro", label: "Outro" },
+] as const;
+
+export const PERIODOS_ESCOLA = [
+  { value: "manha", label: "Manhã" },
+  { value: "tarde", label: "Tarde" },
+  { value: "noite", label: "Noite" },
+  { value: "integral", label: "Integral" },
 ] as const;

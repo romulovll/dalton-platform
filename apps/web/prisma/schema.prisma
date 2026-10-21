@@ -57,6 +57,8 @@ model Unidade {
   setores        Setor[]
   bens           Bem[]
   usuarioUnidades UsuarioUnidade[]
+  participantes  Participante[]
+  atividades     Atividade[]
 
   @@map("unidades")
 }
@@ -299,6 +301,8 @@ model Usuario {
   inventarios     Inventario[] @relation("inventario_responsavel")
   chamados        Chamado[]
   documentos      Documento[]
+  atividadesResp  Atividade[]    @relation("atividade_professor")
+  presencasReg    Presenca[]     @relation("presenca_registrador")
 
   @@map("usuarios")
 }
@@ -327,6 +331,7 @@ enum PerfilAcesso {
   ADMIN_GERAL
   ADMIN_UNIDADE
   GESTOR
+  PROFESSOR
   RESPONSAVEL_SETOR
   CONTADOR
   AUDITOR
@@ -423,6 +428,242 @@ enum SituacaoChamado {
   EM_ANDAMENTO
   RESOLVIDO
   FECHADO
+}
+
+// ============================================================
+// PARTICIPANTES E PRESENÇA (módulo Social)
+// ============================================================
+
+model Participante {
+  id              String   @id @default(cuid())
+  nome            String
+  cpf             String?  @unique
+  rg              String?
+  dataNascimento  DateTime @map("data_nascimento")
+  telefone        String?
+  endereco        String?
+  fotoUrl         String?  @map("foto_url")
+  unidadeId       String   @map("unidade_id")
+  situacao        SituacaoParticipante @default(ATIVO)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  unidade         Unidade  @relation(fields: [unidadeId], references: [id])
+  atividades      AtividadeParticipante[]
+  presencas       Presenca[]
+  responsaveis    ResponsavelParticipante[]
+  saude           SaudeParticipante?
+  escola          EscolaParticipante?
+  moradia         MoradiaParticipante?
+  filiacao        FiliacaoParticipante?
+  autorizacao     AutorizacaoParticipante?
+  membrosF        MembroFamiliar[]
+  observacao      ObservacaoParticipante?
+
+  @@map("participantes")
+}
+
+model Atividade {
+  id            String   @id @default(cuid())
+  nome          String
+  descricao     String?
+  publicoAlvo   PublicoAlvo @map("publico_alvo")
+  unidadeId     String?  @map("unidade_id")
+  usuarioId     String?  @map("usuario_id")
+  ativa         Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  unidade       Unidade?  @relation(fields: [unidadeId], references: [id])
+  usuario       Usuario?  @relation("atividade_professor", fields: [usuarioId], references: [id])
+  participantes AtividadeParticipante[]
+  presencas     Presenca[]
+
+  @@map("atividades")
+}
+
+model AtividadeParticipante {
+  id              String   @id @default(cuid())
+  atividadeId     String   @map("atividade_id")
+  participanteId  String   @map("participante_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  atividade       Atividade    @relation(fields: [atividadeId], references: [id])
+  participante    Participante @relation(fields: [participanteId], references: [id])
+
+  @@unique([atividadeId, participanteId])
+  @@map("atividade_participantes")
+}
+
+model Presenca {
+  id               String   @id @default(cuid())
+  atividadeId      String   @map("atividade_id")
+  participanteId   String   @map("participante_id")
+  data             DateTime @db.Date
+  presente         Boolean  @default(false)
+  observacao       String?
+  registradoPorId  String   @map("registrado_por_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  atividade        Atividade    @relation(fields: [atividadeId], references: [id])
+  participante     Participante @relation(fields: [participanteId], references: [id])
+  registradoPor    Usuario      @relation("presenca_registrador", fields: [registradoPorId], references: [id])
+
+  @@unique([atividadeId, participanteId, data])
+  @@map("presencas")
+}
+
+// Sub-tabelas do participante
+
+model ResponsavelParticipante {
+  id              String   @id @default(cuid())
+  participanteId  String   @map("participante_id")
+  nome            String?
+  parentesco      String?
+  telefone        String?
+  trabalho        String?
+  endereco        String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  participante    Participante @relation(fields: [participanteId], references: [id], onDelete: Cascade)
+
+  @@map("responsaveis_participante")
+}
+
+model SaudeParticipante {
+  id                            String   @id @default(cuid())
+  participanteId                String   @unique @map("participante_id")
+  temProblemasSaude             Boolean  @default(false) @map("tem_problemas_saude")
+  descricaoProblemasSaude       String?  @map("descricao_problemas_saude")
+  temDeficiencia                Boolean  @default(false) @map("tem_deficiencia")
+  descricaoDeficiencia          String?  @map("descricao_deficiencia")
+  temAlergiaRemedio             Boolean  @default(false) @map("tem_alergia_remedio")
+  descricaoAlergiaRemedio       String?  @map("descricao_alergia_remedio")
+  temIntoleranciaAlimentar      Boolean  @default(false) @map("tem_intolerancia_alimentar")
+  descricaoIntoleranciaAlimentar String? @map("descricao_intolerancia_alimentar")
+  temMedicacaoRegular           Boolean  @default(false) @map("tem_medicacao_regular")
+  descricaoMedicacaoRegular     String?  @map("descricao_medicacao_regular")
+  createdAt                     DateTime @default(now()) @map("created_at")
+  updatedAt                     DateTime @updatedAt @map("updated_at")
+
+  participante                  Participante @relation(fields: [participanteId], references: [id], onDelete: Cascade)
+
+  @@map("saude_participante")
+}
+
+model EscolaParticipante {
+  id              String   @id @default(cuid())
+  participanteId  String   @unique @map("participante_id")
+  nomeEscola      String?  @map("nome_escola")
+  periodo         String?
+  serie           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  participante    Participante @relation(fields: [participanteId], references: [id], onDelete: Cascade)
+
+  @@map("escolas_participante")
+}
+
+model MoradiaParticipante {
+  id                  String   @id @default(cuid())
+  participanteId      String   @unique @map("participante_id")
+  tipoImovel          TipoImovel? @map("tipo_imovel")
+  tipoImovelOutro     String?  @map("tipo_imovel_outro")
+  valorAluguel        Int?     @map("valor_aluguel")
+  temAguaEncanada     Boolean  @default(false) @map("tem_agua_encanada")
+  temEsgoto           Boolean  @default(false) @map("tem_esgoto")
+  temEnergia          Boolean  @default(false) @map("tem_energia")
+  nis                 String?
+  temBeneficios       Boolean  @default(false) @map("tem_beneficios")
+  descricaoBeneficios String?  @map("descricao_beneficios")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  participante        Participante @relation(fields: [participanteId], references: [id], onDelete: Cascade)
+
+  @@map("moradia_participante")
+}
+
+model FiliacaoParticipante {
+  id              String   @id @default(cuid())
+  participanteId  String   @unique @map("participante_id")
+  nomeMae         String?  @map("nome_mae")
+  telefoneMae     String?  @map("telefone_mae")
+  trabalhoMae     String?  @map("trabalho_mae")
+  nomePai         String?  @map("nome_pai")
+  telefonePai     String?  @map("telefone_pai")
+  trabalhoPai     String?  @map("trabalho_pai")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  participante    Participante @relation(fields: [participanteId], references: [id], onDelete: Cascade)
+
+  @@map("filiacao_participante")
+}
+
+model AutorizacaoParticipante {
+  id                  String   @id @default(cuid())
+  participanteId      String   @unique @map("participante_id")
+  podeSairSozinho     Boolean  @default(false) @map("pode_sair_sozinho")
+  nomeAutorizado      String?  @map("nome_autorizado")
+  vinculoAutorizado   String?  @map("vinculo_autorizado")
+  telefoneAutorizado  String?  @map("telefone_autorizado")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  participante        Participante @relation(fields: [participanteId], references: [id], onDelete: Cascade)
+
+  @@map("autorizacao_participante")
+}
+
+model MembroFamiliar {
+  id              String   @id @default(cuid())
+  participanteId  String   @map("participante_id")
+  nome            String
+  parentesco      String?
+  idade           Int?
+  profissao       String?
+  renda           Int?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  participante    Participante @relation(fields: [participanteId], references: [id], onDelete: Cascade)
+
+  @@map("membros_familiares")
+}
+
+model ObservacaoParticipante {
+  id              String   @id @default(cuid())
+  participanteId  String   @unique @map("participante_id")
+  notas           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  participante    Participante @relation(fields: [participanteId], references: [id], onDelete: Cascade)
+
+  @@map("observacao_participante")
+}
+
+enum PublicoAlvo {
+  CRIANCAS
+  IDOSOS
+  AMBOS
+}
+
+enum SituacaoParticipante {
+  ATIVO
+  INATIVO
+  TRANSFERIDO
+}
+
+enum TipoImovel {
+  PROPRIO
+  ALUGADO
+  CEDIDO
+  OUTRO
 }
 
 // ============================================================

@@ -18,6 +18,9 @@ import {
   ShieldCheck,
   MessageSquareWarning,
   FileText,
+  Users2,
+  CalendarDays,
+  ClipboardList,
 } from "lucide-react";
 import {
   Sidebar,
@@ -48,6 +51,14 @@ const menuItems = [
       { label: "Movimentações", href: "/movimentacoes", icon: ArrowLeftRight },
       { label: "Parcerias", href: "/parcerias", icon: Handshake },
       { label: "Inventários", href: "/inventarios", icon: ClipboardCheck },
+    ],
+  },
+  {
+    group: "Social",
+    items: [
+      { label: "Participantes", href: "/participantes", icon: Users2 },
+      { label: "Atividades", href: "/atividades", icon: CalendarDays },
+      { label: "Presença", href: "/presenca", icon: ClipboardList },
     ],
   },
   {

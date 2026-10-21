@@ -7,6 +7,7 @@ const PROFILE_LEVEL: Record<string, number> = {
   GESTOR: 60,
   CONTADOR: 50,
   AUDITOR: 40,
+  PROFESSOR: 30,
   RESPONSAVEL_SETOR: 20,
   CONSULTA: 10,
 };
