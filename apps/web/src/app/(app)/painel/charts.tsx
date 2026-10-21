@@ -117,3 +117,19 @@ export function ValorChart({ data }: { data: { name: string; aquisicao: number; 
     </ResponsiveContainer>
   );
 }
+
+export function AttendanceChart({ data }: { data: { name: string; presentes: number; ausentes: number }[] }) {
+  if (data.length === 0) return null;
+  return (
+    <ResponsiveContainer width="100%" height={250}>
+      <BarChart data={data} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+        <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+        <YAxis tick={{ fontSize: 10 }} allowDecimals={false} width={30} />
+        <Tooltip contentStyle={{ fontSize: 12 }} />
+        <Bar dataKey="presentes" name="Presentes" fill="#1B5E34" radius={[4, 4, 0, 0]} stackId="a" />
+        <Bar dataKey="ausentes" name="Ausentes" fill="#EF4444" radius={[4, 4, 0, 0]} stackId="a" />
+        <Legend wrapperStyle={{ fontSize: 10 }} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}

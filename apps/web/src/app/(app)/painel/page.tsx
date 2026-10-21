@@ -1,10 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Building2, ArrowLeftRight, AlertTriangle } from "lucide-react";
+import { Package, Building2, ArrowLeftRight, AlertTriangle, Users2, CalendarDays, ClipboardList } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { CategoryChart, UnitPieChart, ValorChart } from "./charts";
+import { CategoryChart, UnitPieChart, ValorChart, AttendanceChart } from "./charts";
+import { getEstatisticasPresenca } from "@/lib/actions/presenca";
 
 export default async function PainelPage() {
   const [
@@ -12,6 +13,7 @@ export default async function PainelPage() {
     totalUnidades,
     totalMovimentacoes,
     bensInativos,
+    presencaStats,
     bensByCategoria,
     bensByUnidade,
     valorByCategoria,
@@ -22,6 +24,7 @@ export default async function PainelPage() {
     prisma.bem.count({
       where: { situacao: { in: ["EM_MANUTENCAO", "DESAPARECIDO"] } },
     }),
+    getEstatisticasPresenca(),
     prisma.bem.groupBy({
       by: ["categoriaId"],
       where: { situacao: { not: "BAIXADO" } },
@@ -114,7 +117,32 @@ export default async function PainelPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat) => (
+        {[...stats,
+          {
+            title: "Participantes",
+            value: presencaStats.participantesAtivos.toString(),
+            description: "Participantes ativos",
+            icon: Users2,
+            color: "text-indigo-600",
+            bgColor: "bg-indigo-100",
+          },
+          {
+            title: "Atividades",
+            value: presencaStats.atividadesAtivas.toString(),
+            description: "Atividades ativas",
+            icon: CalendarDays,
+            color: "text-purple-600",
+            bgColor: "bg-purple-100",
+          },
+          {
+            title: "Presença Hoje",
+            value: presencaStats.presencaHoje.toString(),
+            description: "Presenças registradas",
+            icon: ClipboardList,
+            color: "text-teal-600",
+            bgColor: "bg-teal-100",
+          },
+        ].map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-cinza-medio">
@@ -170,6 +198,20 @@ export default async function PainelPage() {
                 </p>
               </div>
             </Link>
+            <Link
+              href="/presenca"
+              className="flex items-center gap-3 rounded-lg border border-gray-100 p-3 transition-colors hover:bg-cinza-claro"
+            >
+              <div className="rounded-lg bg-indigo-100 p-2">
+                <ClipboardList className="h-4 w-4 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">Registrar Presença</p>
+                <p className="text-xs text-cinza-medio">
+                  Chamada diária das atividades
+                </p>
+              </div>
+            </Link>
           </CardContent>
         </Card>
 
@@ -220,8 +262,39 @@ export default async function PainelPage() {
           </Card>
         </div>
       )}
+      {/* Attendance by activity chart */}
+      {presencaStats.participantesAtivos > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Presenças por Atividade (total)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AttendanceByActivity />
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
+}
+
+async function AttendanceByActivity() {
+  const atividades = await prisma.atividade.findMany({
+    where: { ativa: true },
+    select: {
+      nome: true,
+      presencas: {
+        select: { presente: true },
+      },
+    },
+  });
+
+  const data = atividades.map((a) => ({
+    name: a.nome.length > 15 ? a.nome.slice(0, 15) + "…" : a.nome,
+    presentes: a.presencas.filter((p) => p.presente).length,
+    ausentes: a.presencas.filter((p) => !p.presente).length,
+  }));
+
+  return <AttendanceChart data={data} />;
 }
 
 async function RecentAssets() {
