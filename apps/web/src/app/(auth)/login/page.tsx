@@ -1,13 +1,38 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { loginAction } from "@/lib/actions/auth";
 
+const RECAPTCHA_SITE_KEY = "6Lci9PktAAAAAPYDaJbvx7EjNAt8GtMGce6DpXcJ";
+
+declare global {
+  interface Window {
+    grecaptcha: {
+      enterprise: {
+        ready: (cb: () => void) => void;
+        execute: (key: string, opts: { action: string }) => Promise<string>;
+      };
+    };
+  }
+}
+
 export default function LoginPage() {
+  const formRef = useRef<HTMLFormElement>(null);
+
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
+      // Get reCAPTCHA token
+      try {
+        const token = await window.grecaptcha.enterprise.execute(RECAPTCHA_SITE_KEY, {
+          action: "LOGIN",
+        });
+        formData.set("recaptcha_token", token);
+      } catch {
+        // reCAPTCHA failed — still allow login (graceful degradation)
+      }
       return loginAction(formData);
     },
     null
@@ -15,6 +40,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-cinza-claro">
+      <Script
+        src={`https://www.google.com/recaptcha/enterprise.js?render=${RECAPTCHA_SITE_KEY}`}
+        strategy="afterInteractive"
+      />
       <div className="w-full max-w-md mx-4">
         <div className="rounded-2xl bg-white p-8 shadow-lg border border-gray-100">
           {/* Logo */}
@@ -44,7 +73,7 @@ export default function LoginPage() {
           )}
 
           {/* Form */}
-          <form action={formAction} className="space-y-4">
+          <form ref={formRef} action={formAction} className="space-y-4">
             <div>
               <label
                 htmlFor="email"
@@ -100,6 +129,10 @@ export default function LoginPage() {
               ← Voltar ao início
             </Link>
           </div>
+
+          <p className="mt-4 text-center text-[10px] text-gray-400">
+            Protegido por reCAPTCHA Enterprise
+          </p>
         </div>
       </div>
     </div>

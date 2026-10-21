@@ -5,12 +5,47 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createSession, deleteSession, getSession } from "@/lib/auth";
 
+async function verifyRecaptcha(token: string | null): Promise<boolean> {
+  if (!token) return true; // graceful: allow if no token (dev mode)
+  try {
+    const projectId = process.env.GOOGLE_CLOUD_PROJECT || "dalton-platform";
+    const res = await fetch(
+      `https://recaptchaenterprise.googleapis.com/v1/projects/${projectId}/assessments`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event: {
+            token,
+            siteKey: "6Lci9PktAAAAAPYDaJbvx7EjNAt8GtMGce6DpXcJ",
+            expectedAction: "LOGIN",
+          },
+        }),
+      }
+    );
+    const data = await res.json();
+    const score = data.riskAnalysis?.score ?? 0;
+    console.log(`[RECAPTCHA] Score: ${score}`);
+    return score >= 0.3; // Block only very suspicious traffic
+  } catch (err) {
+    console.error("[RECAPTCHA] Verification failed:", err);
+    return true; // Allow login if reCAPTCHA service is down
+  }
+}
+
 export async function loginAction(formData: FormData) {
   const email = formData.get("email") as string;
   const senha = formData.get("password") as string;
+  const recaptchaToken = formData.get("recaptcha_token") as string | null;
 
   if (!email || !senha) {
     return { error: "E-mail e senha são obrigatórios." };
+  }
+
+  // Verify reCAPTCHA
+  const isHuman = await verifyRecaptcha(recaptchaToken);
+  if (!isHuman) {
+    return { error: "Verificação de segurança falhou. Tente novamente." };
   }
 
   const usuario = await prisma.usuario.findUnique({
