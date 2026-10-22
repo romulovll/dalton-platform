@@ -6,29 +6,28 @@ import { prisma } from "@/lib/prisma";
 import { createSession, deleteSession, getSession } from "@/lib/auth";
 
 async function verifyRecaptcha(token: string | null): Promise<boolean> {
-  if (!token) return true; // graceful: allow if no token (dev mode)
+  if (!token) return true;
   try {
+    const { RecaptchaEnterpriseServiceClient } = await import("@google-cloud/recaptcha-enterprise");
+    const client = new RecaptchaEnterpriseServiceClient();
     const projectId = process.env.GOOGLE_CLOUD_PROJECT || "dalton-platform";
-    const res = await fetch(
-      `https://recaptchaenterprise.googleapis.com/v1/projects/${projectId}/assessments`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          event: {
-            token,
-            siteKey: "6Lci9PktAAAAAPYDaJbvx7EjNAt8GtMGce6DpXcJ",
-            expectedAction: "LOGIN",
-          },
-        }),
-      }
-    );
-    const data = await res.json();
-    const score = data.riskAnalysis?.score ?? 0;
-    console.log(`[RECAPTCHA] Score: ${score}`);
-    return score >= 0.3; // Block only very suspicious traffic
+
+    const [response] = await client.createAssessment({
+      parent: `projects/${projectId}`,
+      assessment: {
+        event: {
+          token,
+          siteKey: "6Lci9PktAAAAAPYDaJbvx7EjNAt8GtMGce6DpXcJ",
+          expectedAction: "LOGIN",
+        },
+      },
+    });
+
+    const score = response.riskAnalysis?.score ?? 0;
+    console.log(`[RECAPTCHA] Score: ${score}, valid: ${response.tokenProperties?.valid}`);
+    return score >= 0.3;
   } catch (err) {
-    console.error("[RECAPTCHA] Verification failed:", err);
+    console.error("[RECAPTCHA] Verification failed:", err instanceof Error ? err.message : err);
     return true; // Allow login if reCAPTCHA service is down
   }
 }
