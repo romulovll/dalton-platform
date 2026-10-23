@@ -35,15 +35,18 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 
+// Which profiles can see each menu group
 const menuItems = [
   {
     group: "Principal",
+    roles: ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PROFESSOR", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR", "CONSULTA"],
     items: [
       { label: "Painel", href: "/painel", icon: LayoutDashboard },
     ],
   },
   {
     group: "Patrimônio",
+    roles: ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR"],
     items: [
       { label: "Unidades", href: "/unidades", icon: Building2 },
       { label: "Bens", href: "/bens", icon: Package },
@@ -55,6 +58,7 @@ const menuItems = [
   },
   {
     group: "Social",
+    roles: ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PROFESSOR"],
     items: [
       { label: "Participantes", href: "/participantes", icon: Users2 },
       { label: "Atividades", href: "/atividades", icon: CalendarDays },
@@ -63,6 +67,7 @@ const menuItems = [
   },
   {
     group: "Administração",
+    roles: ["ADMIN_GERAL", "ADMIN_UNIDADE"],
     items: [
       { label: "Usuários", href: "/usuarios", icon: Users },
       { label: "Relatórios", href: "/relatorios", icon: FileBarChart },
@@ -74,7 +79,7 @@ const menuItems = [
   },
 ];
 
-export function AppSidebar({ user }: { user: { nome: string; email: string } }) {
+export function AppSidebar({ user }: { user: { nome: string; email: string; perfil: string } }) {
   const pathname = usePathname();
   const initials = user.nome
     .split(" ")
@@ -82,6 +87,9 @@ export function AppSidebar({ user }: { user: { nome: string; email: string } }) 
     .slice(0, 2)
     .map((w) => w[0].toUpperCase())
     .join("");
+
+  // Filter menu groups by user's profile
+  const visibleMenus = menuItems.filter((group) => group.roles.includes(user.perfil));
 
   return (
     <Sidebar>
@@ -104,7 +112,7 @@ export function AppSidebar({ user }: { user: { nome: string; email: string } }) 
       </SidebarHeader>
 
       <SidebarContent>
-        {menuItems.map((group) => (
+        {visibleMenus.map((group) => (
           <SidebarGroup key={group.group}>
             <SidebarGroupLabel>{group.group}</SidebarGroupLabel>
             <SidebarGroupContent>
