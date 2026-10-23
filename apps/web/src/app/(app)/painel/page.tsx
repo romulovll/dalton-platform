@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Building2, ArrowLeftRight, AlertTriangle, Users2, CalendarDays, ClipboardList } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { CategoryChart, UnitPieChart, ValorChart, AttendanceChart } from "./charts";
+import { CategoryChart, UnitPieChart, ValorChart } from "./charts";
 import { getEstatisticasPresenca } from "@/lib/actions/presenca";
 
 export default async function PainelPage() {
@@ -262,39 +262,8 @@ export default async function PainelPage() {
           </Card>
         </div>
       )}
-      {/* Attendance by activity chart */}
-      {presencaStats.participantesAtivos > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Presenças por Atividade (total)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AttendanceByActivity />
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
-}
-
-async function AttendanceByActivity() {
-  const atividades = await prisma.atividade.findMany({
-    where: { ativa: true },
-    select: {
-      nome: true,
-      presencas: {
-        select: { presente: true },
-      },
-    },
-  });
-
-  const data = atividades.map((a) => ({
-    name: a.nome.length > 15 ? a.nome.slice(0, 15) + "…" : a.nome,
-    presentes: a.presencas.filter((p) => p.presente).length,
-    ausentes: a.presencas.filter((p) => !p.presente).length,
-  }));
-
-  return <AttendanceChart data={data} />;
 }
 
 async function RecentAssets() {
