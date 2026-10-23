@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { requireProfile } from "@/lib/rbac";
+import { getSession } from "@/lib/auth";
 import { PublicoAlvo } from "@prisma/client";
 
 export async function createAtividade(formData: FormData) {
@@ -55,9 +56,15 @@ export async function updateAtividade(id: string, formData: FormData) {
 }
 
 export async function getAtividades(filters?: { unidadeId?: string; publicoAlvo?: string }) {
+  const session = await getSession();
   const where: Record<string, unknown> = {};
   if (filters?.unidadeId) where.unidadeId = filters.unidadeId;
   if (filters?.publicoAlvo) where.publicoAlvo = filters.publicoAlvo;
+
+  // Professors only see their own activities
+  if (session?.perfil === "PROFESSOR") {
+    where.usuarioId = session.userId;
+  }
 
   return prisma.atividade.findMany({
     where,
@@ -71,7 +78,9 @@ export async function getAtividades(filters?: { unidadeId?: string; publicoAlvo?
 }
 
 export async function getAtividade(id: string) {
-  return prisma.atividade.findUnique({
+  const session = await getSession();
+
+  const atividade = await prisma.atividade.findUnique({
     where: { id },
     include: {
       unidade: true,
@@ -88,6 +97,13 @@ export async function getAtividade(id: string) {
       },
     },
   });
+
+  // Professors can only see their own activities
+  if (atividade && session?.perfil === "PROFESSOR" && atividade.usuarioId !== session.userId) {
+    return null;
+  }
+
+  return atividade;
 }
 
 export async function addParticipanteToAtividade(atividadeId: string, participanteId: string) {

@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, FileBarChart, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
 
 export default async function RelatoriosPresencaPage({
   searchParams,
@@ -22,8 +23,15 @@ export default async function RelatoriosPresencaPage({
 }) {
   const params = await searchParams;
 
+  // Professors only see their own activities
+  const session = await getSession();
+  const atividadeWhere: Record<string, unknown> = { ativa: true };
+  if (session?.perfil === "PROFESSOR") {
+    atividadeWhere.usuarioId = session.userId;
+  }
+
   const atividades = await prisma.atividade.findMany({
-    where: { ativa: true },
+    where: atividadeWhere,
     orderBy: { nome: "asc" },
     include: {
       _count: { select: { participantes: true } },
