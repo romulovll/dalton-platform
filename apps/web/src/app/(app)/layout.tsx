@@ -2,16 +2,19 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { TopBar } from "@/components/app/top-bar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { getSession } from "@/lib/auth";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getSession();
+
   return (
     <TooltipProvider>
       <SidebarProvider>
-        <AppSidebar />
+        <AppSidebar user={{ nome: session?.nome || "Usuário", email: session?.email || "" }} />
         <SidebarInset>
           <TopBar />
           <main className="flex-1 p-4 sm:p-6 overflow-x-auto min-w-0">{children}</main>

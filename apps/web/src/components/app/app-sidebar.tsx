@@ -74,8 +74,14 @@ const menuItems = [
   },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ user }: { user: { nome: string; email: string } }) {
   const pathname = usePathname();
+  const initials = user.nome
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
 
   return (
     <Sidebar>
@@ -127,11 +133,11 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-4">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-verde-escuro flex items-center justify-center">
-            <span className="text-xs font-bold text-white">AD</span>
+            <span className="text-xs font-bold text-white">{initials || "U"}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">Administrador</p>
-            <p className="text-xs text-cinza-medio truncate">admin@institutodalton.org.br</p>
+            <p className="text-sm font-medium truncate">{user.nome}</p>
+            <p className="text-xs text-cinza-medio truncate">{user.email}</p>
           </div>
           <form action="/api/logout" method="POST">
             <button
