@@ -10,7 +10,8 @@ import { requireProfile } from "@/lib/rbac";
 export async function createUser(formData: FormData) {
   await requireProfile("ADMIN_GERAL");
   const senha = formData.get("senha") as string;
-  const senhaHash = await hash(senha, 12);
+  // Password is optional — if empty, user can only login via Google
+  const senhaHash = senha ? await hash(senha, 12) : await hash(crypto.randomUUID(), 12);
 
   const usuario = await prisma.usuario.create({
     data: {
@@ -19,7 +20,7 @@ export async function createUser(formData: FormData) {
       senhaHash,
       cpf: (formData.get("cpf") as string) || null,
       telefone: (formData.get("telefone") as string) || null,
-      primeiroAcesso: true,
+      primeiroAcesso: !senha, // skip password change if using Google
     },
   });
 

@@ -103,12 +103,11 @@ export default function NovoUsuarioPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="senha">Senha Temporaria *</Label>
+                <Label htmlFor="senha">Senha Temporária</Label>
                 <Input
                   id="senha" name="senha"
                   type="password"
-                  placeholder="Senha inicial"
-                  required
+                  placeholder="Deixe vazio para login apenas via Google"
                 />
               </div>
             </div>
@@ -116,7 +115,8 @@ export default function NovoUsuarioPage() {
             <div className="flex items-start gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
               <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-blue-800">
-                O usuario devera alterar a senha no primeiro acesso ao sistema.
+                Se o e-mail for Gmail, o usuário pode entrar diretamente com Google (sem senha).
+                Se definir uma senha, o usuário deverá alterá-la no primeiro acesso.
               </p>
             </div>
           </CardContent>
