@@ -6,8 +6,10 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Activity } from "lucide-react";
+import { Plus, Activity, Users2, CheckCircle, XCircle } from "lucide-react";
 import { getAtividades } from "@/lib/actions/atividades";
+import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
 
 const publicoConfig: Record<string, { label: string; className: string }> = {
   CRIANCAS: { label: "Crianças", className: "bg-blue-100 text-blue-800" },
@@ -16,7 +18,19 @@ const publicoConfig: Record<string, { label: string; className: string }> = {
 };
 
 export default async function AtividadesPage() {
+  const session = await getSession();
   const atividades = await getAtividades();
+
+  // Dashboard stats for the professor's activities
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  const atividadeIds = atividades.map((a) => a.id);
+  const [totalParticipantes, presencaHoje, ausenciaHoje] = await Promise.all([
+    prisma.atividadeParticipante.count({ where: { atividadeId: { in: atividadeIds } } }),
+    prisma.presenca.count({ where: { atividadeId: { in: atividadeIds }, data: hoje, presente: true } }),
+    prisma.presenca.count({ where: { atividadeId: { in: atividadeIds }, data: hoje, presente: false } }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -36,6 +50,38 @@ export default async function AtividadesPage() {
             Nova Atividade
           </Link>
         </div>
+      </div>
+
+      {/* Stats dashboard */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-5 pb-4 text-center">
+            <Activity className="h-5 w-5 text-verde-medio mx-auto mb-1" />
+            <p className="text-2xl font-bold text-texto-escuro">{atividades.length}</p>
+            <p className="text-xs text-cinza-medio">Atividades</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5 pb-4 text-center">
+            <Users2 className="h-5 w-5 text-azul mx-auto mb-1" />
+            <p className="text-2xl font-bold text-texto-escuro">{totalParticipantes}</p>
+            <p className="text-xs text-cinza-medio">Participantes Inscritos</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5 pb-4 text-center">
+            <CheckCircle className="h-5 w-5 text-green-600 mx-auto mb-1" />
+            <p className="text-2xl font-bold text-green-600">{presencaHoje}</p>
+            <p className="text-xs text-cinza-medio">Presentes Hoje</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5 pb-4 text-center">
+            <XCircle className="h-5 w-5 text-red-500 mx-auto mb-1" />
+            <p className="text-2xl font-bold text-red-500">{ausenciaHoje}</p>
+            <p className="text-xs text-cinza-medio">Ausentes Hoje</p>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
