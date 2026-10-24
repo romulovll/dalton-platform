@@ -1,7 +1,8 @@
-import { deleteSession } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST() {
-  await deleteSession();
-  redirect("/login");
+  const cookieStore = await cookies();
+  cookieStore.delete("dalton_session");
+  return NextResponse.json({ ok: true });
 }

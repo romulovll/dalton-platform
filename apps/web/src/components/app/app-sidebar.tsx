@@ -147,15 +147,17 @@ export function AppSidebar({ user }: { user: { nome: string; email: string; perf
             <p className="text-sm font-medium truncate">{user.nome}</p>
             <p className="text-xs text-cinza-medio truncate">{user.email}</p>
           </div>
-          <form action="/api/logout" method="POST">
-            <button
-              type="submit"
-              className="text-xs text-cinza-medio hover:text-vermelho transition-colors"
-              title="Sair"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={async () => {
+              await fetch("/api/logout", { method: "POST" });
+              window.location.href = "/login";
+            }}
+            className="text-xs text-cinza-medio hover:text-vermelho transition-colors"
+            title="Sair"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
         </div>
       </SidebarFooter>
     </Sidebar>
