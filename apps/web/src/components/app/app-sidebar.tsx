@@ -21,6 +21,7 @@ import {
   Users2,
   CalendarDays,
   ClipboardList,
+  Brain,
 } from "lucide-react";
 import {
   Sidebar,
@@ -63,6 +64,13 @@ const menuItems = [
       { label: "Participantes", href: "/participantes", icon: Users2 },
       { label: "Atividades", href: "/atividades", icon: CalendarDays },
       { label: "Presença", href: "/presenca", icon: ClipboardList },
+    ],
+  },
+  {
+    group: "Psicologia",
+    roles: ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PSICOLOGO"],
+    items: [
+      { label: "Agenda", href: "/psicologia", icon: Brain },
     ],
   },
   {

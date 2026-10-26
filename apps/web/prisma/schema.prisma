@@ -59,6 +59,7 @@ model Unidade {
   usuarioUnidades UsuarioUnidade[]
   participantes  Participante[]
   atividades     Atividade[]
+  agendaPsi      AgendaPsicologia[] @relation("psi_unidade")
 
   @@map("unidades")
 }
@@ -303,6 +304,7 @@ model Usuario {
   documentos      Documento[]
   atividadesResp  Atividade[]    @relation("atividade_professor")
   presencasReg    Presenca[]     @relation("presenca_registrador")
+  agendaPsi       AgendaPsicologia[] @relation("psicologo_agenda")
 
   @@map("usuarios")
 }
@@ -332,6 +334,7 @@ enum PerfilAcesso {
   ADMIN_UNIDADE
   GESTOR
   PROFESSOR
+  PSICOLOGO
   RESPONSAVEL_SETOR
   CONTADOR
   AUDITOR
@@ -386,6 +389,48 @@ enum StatusVerificacao {
   LOCALIZADO
   NAO_LOCALIZADO
   DIVERGENTE
+}
+
+// ============================================================
+// PSICOLOGIA (agendamento e presença — SEM dados clínicos)
+// Resolução CFP 5/2025: prontuário é responsabilidade exclusiva
+// do profissional. LGPD Art. 11: dados de saúde são sensíveis.
+// Este módulo registra apenas dados administrativos.
+// ============================================================
+
+model AgendaPsicologia {
+  id              String   @id @default(cuid())
+  participanteId  String   @map("participante_id")
+  psicologoId     String   @map("psicologo_id")
+  unidadeId       String?  @map("unidade_id")
+  dataHora        DateTime @map("data_hora")
+  duracao         Int      @default(50) // minutos
+  tipo            TipoAtendimentoPsi
+  status          StatusAgendaPsi @default(AGENDADO)
+  canceladoPor    String?  @map("cancelado_por")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  participante    Participante @relation(fields: [participanteId], references: [id])
+  psicologo       Usuario      @relation("psicologo_agenda", fields: [psicologoId], references: [id])
+  unidade         Unidade?     @relation("psi_unidade", fields: [unidadeId], references: [id])
+
+  @@map("agenda_psicologia")
+}
+
+enum TipoAtendimentoPsi {
+  INDIVIDUAL
+  GRUPO
+  FAMILIA
+  ACOLHIMENTO
+}
+
+enum StatusAgendaPsi {
+  AGENDADO
+  REALIZADO
+  FALTA
+  CANCELADO
+  REAGENDADO
 }
 
 // ============================================================
@@ -459,6 +504,7 @@ model Participante {
   autorizacao     AutorizacaoParticipante?
   membrosF        MembroFamiliar[]
   observacao      ObservacaoParticipante?
+  agendaPsi       AgendaPsicologia[]
 
   @@map("participantes")
 }

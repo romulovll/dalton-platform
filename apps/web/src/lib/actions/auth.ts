@@ -107,7 +107,7 @@ export async function loginAction(formData: FormData) {
   });
 
   // Determine highest access profile
-  const perfilOrder = ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR", "CONSULTA"];
+  const perfilOrder = ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PSICOLOGO", "PROFESSOR", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR", "CONSULTA"];
   const perfis = usuario.unidades.map((u) => u.perfil);
   const perfil = perfilOrder.find((p) => perfis.includes(p as never)) || "CONSULTA";
 

@@ -37,6 +37,10 @@ const ROUTE_ACCESS: Record<string, string[]> = {
   "/api/relatorio-pdf": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "CONTADOR", "AUDITOR"],
   "/api/ficha-cadastro": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "RESPONSAVEL_SETOR"],
 
+  // Psicologia — psychologists and admins
+  "/psicologia": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PSICOLOGO"],
+  "/api/participantes-list": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PROFESSOR", "PSICOLOGO"],
+
   // Admin only
   "/usuarios": ["ADMIN_GERAL", "ADMIN_UNIDADE"],
   "/configuracoes": ["ADMIN_GERAL", "ADMIN_UNIDADE"],
