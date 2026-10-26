@@ -140,7 +140,12 @@ export default async function PsicologiaPage({
                       <p className="text-xs text-cinza-medio">{a.duracao} min</p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-texto-escuro">{a.participante.nome}</p>
+                      <p className="font-medium text-texto-escuro">
+                        {a.participante?.nome || a.nomePessoa || "Não identificado"}
+                        {!a.participante && a.nomePessoa && (
+                          <span className="text-xs text-cinza-medio ml-1">(não cadastrado)</span>
+                        )}
+                      </p>
                       <p className="text-sm text-cinza-medio">
                         {tipoConfig[a.tipo]} {a.unidade ? `— ${a.unidade.nome}` : ""}
                       </p>

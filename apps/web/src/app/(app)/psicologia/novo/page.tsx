@@ -30,6 +30,7 @@ interface Unidade {
 export default function NovoAgendamentoPage() {
   const [participantes, setParticipantes] = useState<Participante[]>([]);
   const [unidades, setUnidades] = useState<Unidade[]>([]);
+  const [isRegistered, setIsRegistered] = useState(true);
 
   useEffect(() => {
     fetch("/api/form-data").then((r) => r.json()).then((data) => {
@@ -72,17 +73,37 @@ export default function NovoAgendamentoPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Participante *</Label>
-                <Select name="participanteId" required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o participante" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {participantes.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Pessoa *</Label>
+                <div className="flex gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsRegistered(true)}
+                    className={`px-3 py-1 rounded-full text-xs ${isRegistered ? "bg-verde-escuro text-white" : "bg-gray-100"}`}
+                  >
+                    Participante cadastrado
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsRegistered(false)}
+                    className={`px-3 py-1 rounded-full text-xs ${!isRegistered ? "bg-verde-escuro text-white" : "bg-gray-100"}`}
+                  >
+                    Pessoa não cadastrada
+                  </button>
+                </div>
+                {isRegistered ? (
+                  <Select name="participanteId">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o participante" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {participantes.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input name="nomePessoa" placeholder="Nome da pessoa (apenas o primeiro nome)" required={!isRegistered} />
+                )}
               </div>
 
               <div className="space-y-2">

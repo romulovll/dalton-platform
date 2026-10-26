@@ -12,9 +12,13 @@ export async function createAgendamento(formData: FormData) {
   const session = await getSession();
   if (!session) throw new Error("Não autenticado");
 
+  const participanteId = (formData.get("participanteId") as string) || null;
+  const nomePessoa = (formData.get("nomePessoa") as string) || null;
+
   const agenda = await prisma.agendaPsicologia.create({
     data: {
-      participanteId: formData.get("participanteId") as string,
+      participanteId: participanteId || null,
+      nomePessoa: participanteId ? null : nomePessoa,
       psicologoId: session.userId,
       unidadeId: (formData.get("unidadeId") as string) || null,
       dataHora: new Date(formData.get("dataHora") as string),

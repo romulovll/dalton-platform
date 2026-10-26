@@ -400,7 +400,8 @@ enum StatusVerificacao {
 
 model AgendaPsicologia {
   id              String   @id @default(cuid())
-  participanteId  String   @map("participante_id")
+  participanteId  String?  @map("participante_id") // optional — walk-in/unregistered
+  nomePessoa      String?  @map("nome_pessoa")     // name when not a registered participant
   psicologoId     String   @map("psicologo_id")
   unidadeId       String?  @map("unidade_id")
   dataHora        DateTime @map("data_hora")
@@ -411,9 +412,9 @@ model AgendaPsicologia {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  participante    Participante @relation(fields: [participanteId], references: [id])
-  psicologo       Usuario      @relation("psicologo_agenda", fields: [psicologoId], references: [id])
-  unidade         Unidade?     @relation("psi_unidade", fields: [unidadeId], references: [id])
+  participante    Participante? @relation(fields: [participanteId], references: [id])
+  psicologo       Usuario       @relation("psicologo_agenda", fields: [psicologoId], references: [id])
+  unidade         Unidade?      @relation("psi_unidade", fields: [unidadeId], references: [id])
 
   @@map("agenda_psicologia")
 }
