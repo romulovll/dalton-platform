@@ -39,10 +39,15 @@ test.describe("App Shell (autenticado)", () => {
     await expect(sidebar.getByText("Movimentações")).toBeVisible();
     await expect(sidebar.getByText("Parcerias")).toBeVisible();
     await expect(sidebar.getByText("Inventários")).toBeVisible();
+    await expect(sidebar.getByText("Participantes")).toBeVisible();
+    await expect(sidebar.getByText("Atividades")).toBeVisible();
+    await expect(sidebar.getByText("Agenda", { exact: true })).toBeVisible();
     await expect(sidebar.getByText("Usuários")).toBeVisible();
     await expect(sidebar.getByText("Relatórios")).toBeVisible();
+    await expect(sidebar.getByText("Documentos")).toBeVisible();
     await expect(sidebar.getByText("Auditoria")).toBeVisible();
     await expect(sidebar.getByText("Configurações")).toBeVisible();
+    await expect(sidebar.getByText("Chamados")).toBeVisible();
   });
 
   test("navegar para Unidades via sidebar", async ({ page }) => {

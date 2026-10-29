@@ -17,9 +17,9 @@ test.describe("Página de Login", () => {
     ).toBeVisible();
   });
 
-  test("exibe mensagem de credenciais", async ({ page }) => {
+  test("exibe proteção reCAPTCHA", async ({ page }) => {
     await expect(
-      page.getByText("Utilize as credenciais fornecidas pelo administrador")
+      page.getByText("Protegido por reCAPTCHA Enterprise")
     ).toBeVisible();
   });
 
