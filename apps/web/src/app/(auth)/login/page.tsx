@@ -29,11 +29,14 @@ export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
       try {
-        const token = await window.grecaptcha.enterprise.execute(RECAPTCHA_SITE_KEY, {
-          action: "LOGIN",
-        });
-        formData.set("recaptcha_token", token);
-      } catch { /* graceful */ }
+        if (window.grecaptcha?.enterprise) {
+          const token = await Promise.race([
+            window.grecaptcha.enterprise.execute(RECAPTCHA_SITE_KEY, { action: "LOGIN" }),
+            new Promise<string>((_, reject) => setTimeout(() => reject("timeout"), 3000)),
+          ]);
+          formData.set("recaptcha_token", token);
+        }
+      } catch { /* graceful — skip reCAPTCHA if unavailable or slow */ }
       return loginAction(formData);
     },
     null
