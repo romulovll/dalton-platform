@@ -59,23 +59,23 @@ export default async function RelatoriosPage({
             Relatórios contábeis e de depreciação
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap flex-shrink-0">
           <form action={async () => { "use server"; await runDepreciacao(); }}>
-            <Button type="submit" variant="outline">
-              <TrendingDown className="mr-2 h-4 w-4" />
-              Calcular Depreciação Mensal
+            <Button type="submit" variant="outline" size="sm">
+              <TrendingDown className="mr-1.5 h-3.5 w-3.5" />
+              Depreciação
             </Button>
           </form>
           <Link href="/api/relatorio-csv" target="_blank">
-            <Button variant="outline">
-              <Download className="mr-2 h-4 w-4" />
-              Exportar CSV
+            <Button variant="outline" size="sm">
+              <Download className="mr-1.5 h-3.5 w-3.5" />
+              CSV
             </Button>
           </Link>
           <Link href="/api/relatorio-pdf" target="_blank">
-            <Button variant="outline">
-              <Printer className="mr-2 h-4 w-4" />
-              Imprimir / PDF
+            <Button variant="outline" size="sm">
+              <Printer className="mr-1.5 h-3.5 w-3.5" />
+              PDF
             </Button>
           </Link>
         </div>
@@ -148,11 +148,11 @@ export default async function RelatoriosPage({
                   <TableRow>
                     <TableHead>Tombamento</TableHead>
                     <TableHead>Descrição</TableHead>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Unidade</TableHead>
-                    <TableHead className="text-right">Valor Aquisição</TableHead>
-                    <TableHead className="text-right">Depreciação</TableHead>
-                    <TableHead className="text-right">Valor Contábil</TableHead>
+                    <TableHead className="hidden md:table-cell">Categoria</TableHead>
+                    <TableHead className="hidden lg:table-cell">Unidade</TableHead>
+                    <TableHead className="text-right">Aquisição</TableHead>
+                    <TableHead className="text-right">Deprec.</TableHead>
+                    <TableHead className="text-right">Contábil</TableHead>
                     <TableHead className="text-right">%</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -164,9 +164,9 @@ export default async function RelatoriosPage({
                           {r.tombamento}
                         </Link>
                       </TableCell>
-                      <TableCell className="text-sm max-w-xs truncate">{r.descricao}</TableCell>
-                      <TableCell className="text-sm">{r.categoria}</TableCell>
-                      <TableCell className="text-sm">{r.unidade}</TableCell>
+                      <TableCell className="text-sm max-w-[200px] truncate">{r.descricao}</TableCell>
+                      <TableCell className="text-sm hidden md:table-cell">{r.categoria}</TableCell>
+                      <TableCell className="text-sm hidden lg:table-cell">{r.unidade}</TableCell>
                       <TableCell className="text-right font-mono text-sm">
                         {fmt(r.valorAquisicao)}
                       </TableCell>
