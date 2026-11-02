@@ -5,7 +5,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Package, Upload, FileDown } from "lucide-react";
+import { Plus, Package, Upload, FileDown, Camera } from "lucide-react";
 import { getBens, getCategorias } from "@/lib/actions/assets";
 import { getUnidades } from "@/lib/actions/units";
 import { BensFilters } from "./bens-filters";
@@ -63,17 +63,21 @@ export default async function BensPage({
             Controle de todos os bens do Instituto
           </p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/api/ficha-cadastro" target="_blank" className={cn(buttonVariants({ variant: "outline" }))}>
-            <FileDown className="mr-2 h-4 w-4" />
-            Fichas de Cadastro
+        <div className="flex gap-2 flex-wrap flex-shrink-0">
+          <Link href="/bens/identificar" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+            <Camera className="mr-1.5 h-3.5 w-3.5" />
+            Identificar
           </Link>
-          <Link href="/bens/importar" className={cn(buttonVariants({ variant: "outline" }))}>
-            <Upload className="mr-2 h-4 w-4" />
-            Importar CSV
+          <Link href="/api/ficha-cadastro" target="_blank" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+            <FileDown className="mr-1.5 h-3.5 w-3.5" />
+            Fichas
           </Link>
-          <Link href="/bens/novo" className={cn(buttonVariants({ variant: "default" }), "bg-verde-escuro hover:bg-verde-medio")}>
-            <Plus className="mr-2 h-4 w-4" />
+          <Link href="/bens/importar" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+            <Upload className="mr-1.5 h-3.5 w-3.5" />
+            Importar
+          </Link>
+          <Link href="/bens/novo" className={cn(buttonVariants({ variant: "default", size: "sm" }), "bg-verde-escuro hover:bg-verde-medio")}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
             Novo Bem
           </Link>
         </div>

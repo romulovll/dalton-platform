@@ -51,6 +51,7 @@ const ROUTE_ACCESS: Record<string, string[]> = {
   "/api/form-data": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR"],
   "/api/bens-list": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "RESPONSAVEL_SETOR"],
   "/api/upload": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "RESPONSAVEL_SETOR"],
+  "/api/identificar-bem": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "RESPONSAVEL_SETOR"],
   "/api/import-bens": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR"],
   "/api/upload-documento": ["ADMIN_GERAL", "ADMIN_UNIDADE"],
   "/api/update-documento": ["ADMIN_GERAL", "ADMIN_UNIDADE"],
