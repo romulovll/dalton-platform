@@ -75,10 +75,10 @@ export default function LoginPage() {
     setGoogleState(fd);
   }, [setGoogleState]);
 
-  // Register global callback for Google Sign-In
-  useEffect(() => {
+  // Register global callback immediately — must be set before Google script loads
+  if (typeof window !== "undefined") {
     window.handleGoogleSignIn = handleGoogleCallback;
-  }, [handleGoogleCallback]);
+  }
 
   const error = state?.error || googleState?.error;
 
