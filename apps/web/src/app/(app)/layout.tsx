@@ -15,9 +15,9 @@ export default async function AppLayout({
     <TooltipProvider>
       <SidebarProvider>
         <AppSidebar user={{ nome: session?.nome || "Usuário", email: session?.email || "", perfil: (session?.perfil as string) || "CONSULTA" }} />
-        <SidebarInset>
+        <SidebarInset className="overflow-hidden">
           <TopBar />
-          <main className="flex-1 p-4 sm:p-6 overflow-x-auto min-w-0">{children}</main>
+          <main className="flex-1 p-4 sm:p-6 overflow-x-auto min-w-0 max-w-full">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
