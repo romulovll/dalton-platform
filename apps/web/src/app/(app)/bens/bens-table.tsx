@@ -115,12 +115,12 @@ export function BensTable({ bens }: { bens: BemRow[] }) {
               </TableHead>
               <TableHead>Tombamento</TableHead>
               <TableHead>Descrição</TableHead>
-              <TableHead>Categoria</TableHead>
-              <TableHead>Unidade</TableHead>
-              <TableHead>Responsável</TableHead>
-              <TableHead>Estado</TableHead>
+              <TableHead className="hidden md:table-cell">Categoria</TableHead>
+              <TableHead className="hidden lg:table-cell">Unidade</TableHead>
+              <TableHead className="hidden lg:table-cell">Responsável</TableHead>
+              <TableHead className="hidden md:table-cell">Estado</TableHead>
               <TableHead>Situação</TableHead>
-              <TableHead className="text-right">Valor (R$)</TableHead>
+              <TableHead className="text-right">Valor</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -139,11 +139,11 @@ export function BensTable({ bens }: { bens: BemRow[] }) {
                     {bem.tombamento}
                   </Link>
                 </TableCell>
-                <TableCell>{bem.descricao}</TableCell>
-                <TableCell className="text-sm">{bem.categoria}</TableCell>
-                <TableCell className="text-sm">{bem.unidade}</TableCell>
-                <TableCell className="text-sm">{bem.responsavel}</TableCell>
-                <TableCell>
+                <TableCell className="max-w-[200px] truncate">{bem.descricao}</TableCell>
+                <TableCell className="text-sm hidden md:table-cell">{bem.categoria}</TableCell>
+                <TableCell className="text-sm hidden lg:table-cell">{bem.unidade}</TableCell>
+                <TableCell className="text-sm hidden lg:table-cell">{bem.responsavel}</TableCell>
+                <TableCell className="hidden md:table-cell">
                   <Badge variant="secondary" className={estadoColors[bem.estadoConservacao]}>
                     {estadoLabels[bem.estadoConservacao]}
                   </Badge>
