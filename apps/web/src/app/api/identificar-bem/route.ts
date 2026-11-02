@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import Anthropic from "@anthropic-ai/sdk";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
@@ -11,7 +10,8 @@ export async function POST(request: NextRequest) {
   }
 
   if (!ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: "ANTHROPIC_API_KEY não configurada" }, { status: 500 });
+    console.error("[IDENTIFICAR] ANTHROPIC_API_KEY not set");
+    return NextResponse.json({ error: "Serviço de IA não configurado" }, { status: 500 });
   }
 
   const formData = await request.formData();
@@ -25,27 +25,38 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Apenas imagens são permitidas" }, { status: 400 });
   }
 
+  if (file.size > 10 * 1024 * 1024) {
+    return NextResponse.json({ error: "Imagem deve ter no máximo 10MB" }, { status: 400 });
+  }
+
   const buffer = Buffer.from(await file.arrayBuffer());
   const base64 = buffer.toString("base64");
-  const mediaType = file.type as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+  const mediaType = file.type;
 
   try {
-    const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+    console.log(`[IDENTIFICAR] Analyzing image: ${file.name}, ${(file.size / 1024).toFixed(0)}KB, ${mediaType}`);
 
-    const response = await client.messages.create({
-      model: "claude-haiku-5-5",
-      max_tokens: 1024,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: { type: "base64", media_type: mediaType, data: base64 },
-            },
-            {
-              type: "text",
-              text: `Você é um especialista em controle patrimonial de uma organização sem fins lucrativos no Brasil.
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-5-5",
+        max_tokens: 1024,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "image",
+                source: { type: "base64", media_type: mediaType, data: base64 },
+              },
+              {
+                type: "text",
+                text: `Você é um especialista em controle patrimonial de uma organização sem fins lucrativos no Brasil.
 
 Analise esta foto e responda em JSON com os seguintes campos:
 
@@ -66,24 +77,32 @@ Regras para decidir se deve registrar:
 - Na dúvida, considere: se perder este item, alguém vai sentir falta e precisar comprar outro?
 
 Responda APENAS o JSON, sem texto adicional.`,
-            },
-          ],
-        },
-      ],
+              },
+            ],
+          },
+        ],
+      }),
     });
 
-    const text = response.content[0].type === "text" ? response.content[0].text : "";
+    const data = await res.json();
 
-    // Parse JSON from response
+    if (!res.ok) {
+      console.error("[IDENTIFICAR] API error:", JSON.stringify(data));
+      return NextResponse.json({ error: `Erro da IA: ${data.error?.message || res.statusText}` }, { status: 500 });
+    }
+
+    const text = data.content?.[0]?.text || "";
+    console.log(`[IDENTIFICAR] Response: ${text.slice(0, 100)}...`);
+
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      return NextResponse.json({ error: "Não foi possível analisar a imagem" }, { status: 500 });
+      return NextResponse.json({ error: "Não foi possível analisar a imagem. Tente com outra foto." }, { status: 500 });
     }
 
     const result = JSON.parse(jsonMatch[0]);
     return NextResponse.json(result);
   } catch (err) {
-    console.error("[CLAUDE]", err instanceof Error ? err.message : err);
+    console.error("[IDENTIFICAR] Exception:", err instanceof Error ? err.message : String(err));
     return NextResponse.json(
       { error: "Erro ao analisar a imagem. Tente novamente." },
       { status: 500 }
