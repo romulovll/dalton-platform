@@ -65,10 +65,10 @@ export async function POST(request: NextRequest) {
       perfil,
     });
 
-    // Reset failed login attempts
+    // Reset failed login attempts + skip primeiro_acesso for Google users
     await prisma.usuario.update({
       where: { id: usuario.id },
-      data: { tentativasLogin: 0, bloqueadoAte: null, situacao: "ATIVO" },
+      data: { tentativasLogin: 0, bloqueadoAte: null, situacao: "ATIVO", primeiroAcesso: false },
     });
 
     return NextResponse.json({ ok: true, redirect: "/painel" });

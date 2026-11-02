@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     // Reset login attempts
     await prisma.usuario.update({
       where: { id: usuario.id },
-      data: { tentativasLogin: 0, bloqueadoAte: null, situacao: "ATIVO" },
+      data: { tentativasLogin: 0, bloqueadoAte: null, situacao: "ATIVO", primeiroAcesso: false },
     });
 
     return NextResponse.redirect(new URL("/painel", request.url));
