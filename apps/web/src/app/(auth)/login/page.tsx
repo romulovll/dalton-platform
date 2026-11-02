@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useCallback } from "react";
+import { useActionState, useRef, useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
@@ -64,9 +64,9 @@ export default function LoginPage() {
   }, [setGoogleState]);
 
   // Register global callback for Google Sign-In
-  if (typeof window !== "undefined") {
+  useEffect(() => {
     window.handleGoogleSignIn = handleGoogleCallback;
-  }
+  }, [handleGoogleCallback]);
 
   const error = state?.error || googleState?.error;
 
@@ -108,32 +108,22 @@ export default function LoginPage() {
 
           {/* Google Sign-In */}
           <div className="mb-4">
-            <div id="google-btn-container" ref={(el) => {
-              if (!el) return;
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const tryRender = () => {
-                const google = (window as any).google;
-                if (google?.accounts?.id) {
-                  google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: (response: { credential: string }) => {
-                      window.handleGoogleSignIn(response);
-                    },
-                  });
-                  google.accounts.id.renderButton(el, {
-                    theme: "outline",
-                    size: "large",
-                    width: 360,
-                    text: "signin_with",
-                    shape: "rectangular",
-                    locale: "pt-BR",
-                  });
-                } else {
-                  setTimeout(tryRender, 200);
-                }
-              };
-              tryRender();
-            }} className="flex justify-center" />
+            <div id="g_id_onload"
+              data-client_id={GOOGLE_CLIENT_ID}
+              data-callback="handleGoogleSignIn"
+              data-auto_prompt="false"
+              data-ux_mode="popup"
+            />
+            <div className="g_id_signin flex justify-center"
+              data-type="standard"
+              data-shape="rectangular"
+              data-theme="outline"
+              data-text="signin_with"
+              data-size="large"
+              data-logo_alignment="left"
+              data-width="360"
+              data-locale="pt-BR"
+            />
           </div>
 
           <div className="relative my-4">
