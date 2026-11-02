@@ -25,6 +25,7 @@ declare global {
 export default function LoginPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
@@ -44,15 +45,26 @@ export default function LoginPage() {
 
   const [googleState, setGoogleState] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
-      const res = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential: formData.get("credential") }),
-      });
-      const data = await res.json();
-      if (data.error) return { error: data.error };
-      window.location.href = "/painel";
-      return null;
+      setGoogleLoading(true);
+      try {
+        const res = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ credential: formData.get("credential") }),
+        });
+        const data = await res.json();
+        if (data.error) {
+          setGoogleLoading(false);
+          return { error: data.error };
+        }
+        // Small delay to let cookie propagate before redirect
+        await new Promise((r) => setTimeout(r, 300));
+        window.location.replace("/painel");
+        return null;
+      } catch {
+        setGoogleLoading(false);
+        return { error: "Erro na autenticação. Tente novamente." };
+      }
     },
     null
   );
@@ -69,6 +81,17 @@ export default function LoginPage() {
   }, [handleGoogleCallback]);
 
   const error = state?.error || googleState?.error;
+
+  if (googleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-cinza-claro">
+        <div className="text-center">
+          <div className="h-8 w-8 border-3 border-verde-escuro border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm font-medium text-verde-escuro">Entrando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-cinza-claro">
