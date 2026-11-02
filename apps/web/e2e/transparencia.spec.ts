@@ -50,7 +50,7 @@ test.describe("Documentos (admin)", () => {
     await expect(page.getByRole("heading", { name: "Documentos" })).toBeVisible();
     await expect(page.getByText("Gerencie os documentos do Portal de Transparência")).toBeVisible();
     await expect(page.getByRole("link", { name: /Novo Documento/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Ver Portal Público/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Portal Público/i })).toBeVisible();
   });
 
   test("formulário de novo documento exibe campos corretos", async ({ page }) => {
