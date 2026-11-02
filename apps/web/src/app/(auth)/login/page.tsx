@@ -99,7 +99,7 @@ export default function LoginPage() {
         src={`https://www.google.com/recaptcha/enterprise.js?render=${RECAPTCHA_SITE_KEY}`}
         strategy="afterInteractive"
       />
-      <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
+      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
 
       <div className="w-full max-w-md mx-4">
         <div className="rounded-2xl bg-white p-8 shadow-lg border border-gray-100">
