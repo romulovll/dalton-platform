@@ -148,7 +148,7 @@ export default function LoginPage() {
               data-width="320"
               data-locale="pt-BR"
             />
-            {/* Custom fallback — always visible, triggers Google OAuth */}
+            {/* Fallback: reinitialize Google button on tap if not rendered */}
             <button
               type="button"
               id="google-fallback"
@@ -156,15 +156,16 @@ export default function LoginPage() {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const g = (window as any).google;
                 if (g?.accounts?.id) {
-                  g.accounts.id.prompt((notification: { isNotDisplayed: () => boolean; isSkippedMoment: () => boolean }) => {
-                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                      // Fallback: use OAuth2 redirect flow
-                      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.origin + "/api/auth/google/callback")}&response_type=code&scope=email%20profile&prompt=select_account`;
-                    }
+                  g.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: (response: { credential: string }) => {
+                      window.handleGoogleSignIn(response);
+                    },
+                    ux_mode: "popup",
                   });
+                  g.accounts.id.prompt();
                 } else {
-                  // Google library not loaded — use OAuth2 redirect
-                  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.origin + "/api/auth/google/callback")}&response_type=code&scope=email%20profile&prompt=select_account`;
+                  alert("O serviço do Google não carregou. Tente recarregar a página ou use e-mail e senha.");
                 }
               }}
               className="w-full mt-2 flex items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors"
