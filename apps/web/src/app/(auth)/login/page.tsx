@@ -99,7 +99,7 @@ export default function LoginPage() {
         src={`https://www.google.com/recaptcha/enterprise.js?render=${RECAPTCHA_SITE_KEY}`}
         strategy="afterInteractive"
       />
-      <Script src="https://accounts.google.com/gsi/client?hl=pt-BR" strategy="afterInteractive" />
+      <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
 
       <div className="w-full max-w-md mx-4">
         <div className="rounded-2xl bg-white p-8 shadow-lg border border-gray-100">
@@ -135,7 +135,6 @@ export default function LoginPage() {
               data-client_id={GOOGLE_CLIENT_ID}
               data-callback="handleGoogleSignIn"
               data-auto_prompt="false"
-              data-ux_mode="popup"
             />
             <div className="g_id_signin flex justify-center"
               data-type="standard"
@@ -144,9 +143,13 @@ export default function LoginPage() {
               data-text="signin_with"
               data-size="large"
               data-logo_alignment="left"
-              data-width="360"
+              data-width="320"
               data-locale="pt-BR"
             />
+            {/* Fallback button for mobile if Google button doesn't render */}
+            <noscript>
+              <p className="text-center text-sm text-cinza-medio mt-2">JavaScript necessário para login com Google</p>
+            </noscript>
           </div>
 
           <div className="relative my-4">
