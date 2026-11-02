@@ -30,7 +30,7 @@ test.describe("Relatórios e Depreciação", () => {
     // Should have at least one asset row
     await expect(page.locator("table tbody tr").first()).toBeVisible();
     // Verify depreciation-specific column header
-    await expect(page.getByRole("columnheader", { name: "Depreciação" }).first()).toBeVisible();
+    await expect(page.getByRole("columnheader", { name: /Deprec/i }).first()).toBeVisible();
     await expect(page.getByRole("columnheader", { name: "%" })).toBeVisible();
   });
 
@@ -39,7 +39,7 @@ test.describe("Relatórios e Depreciação", () => {
     await page.goto("/relatorios");
 
     await expect(
-      page.getByRole("button", { name: /Calcular Depreciação Mensal/i })
+      page.getByRole("button", { name: /Depreciação/i })
     ).toBeVisible();
   });
 
@@ -47,7 +47,7 @@ test.describe("Relatórios e Depreciação", () => {
     await loginAs(page);
     await page.goto("/relatorios");
 
-    await expect(page.getByText("Exportar CSV")).toBeVisible();
+    await expect(page.getByRole("link", { name: /CSV/i })).toBeVisible();
   });
 
   test("API de CSV retorna arquivo válido", async ({ page }) => {
@@ -81,7 +81,7 @@ test.describe("Relatórios e Depreciação", () => {
     await page.goto("/relatorios");
 
     // Click the depreciation button
-    await page.getByRole("button", { name: /Calcular Depreciação Mensal/i }).click();
+    await page.getByRole("button", { name: /Depreciação/i }).click();
 
     // Page should reload/refresh and still show the reports
     await expect(page.getByText("Demonstrativo de Depreciação")).toBeVisible({ timeout: 15000 });

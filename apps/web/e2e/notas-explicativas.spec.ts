@@ -45,7 +45,7 @@ test.describe("Notas Explicativas (ITG 2002)", () => {
     await loginAs(page);
     await page.goto("/relatorios");
 
-    await expect(page.getByText("Forma de Aquisição")).toBeVisible();
+    await expect(page.getByText("4. Forma de Aquisição")).toBeVisible();
   });
 
   test("critérios contábeis estão documentados", async ({ page }) => {

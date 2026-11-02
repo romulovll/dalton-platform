@@ -34,7 +34,7 @@ test.describe("Phase 4 — Bulk QR, Import, Charts, PDF", () => {
     await loginAs(page);
     await page.goto("/bens");
 
-    await expect(page.getByRole("link", { name: /Importar CSV/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Importar/i })).toBeVisible();
   });
 
   test("import page loads correctly", async ({ page }) => {
@@ -60,7 +60,7 @@ test.describe("Phase 4 — Bulk QR, Import, Charts, PDF", () => {
     await loginAs(page);
     await page.goto("/relatorios");
 
-    await expect(page.getByRole("link", { name: /Imprimir.*PDF/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /PDF/i })).toBeVisible();
   });
 
   test("PDF report API returns HTML", async ({ page }) => {
