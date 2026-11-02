@@ -21,7 +21,7 @@ test.describe("Landing Page", () => {
       page.getByRole("link", { name: /Acessar Sistema/i }).first()
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: /Conhecer Funcionalidades/i })
+      page.getByRole("link", { name: /Portal de Transparência/i })
     ).toBeVisible();
   });
 
