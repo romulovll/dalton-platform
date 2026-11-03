@@ -88,7 +88,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // Allow public paths
-  if (PUBLIC_PATHS.some((p) => pathname === p)) {
+  if (PUBLIC_PATHS.some((p) => pathname === p || pathname === p + "/")) {
+    return NextResponse.next();
+  }
+
+  // Allow all Google auth routes
+  if (pathname.startsWith("/api/auth/google")) {
     return NextResponse.next();
   }
 
