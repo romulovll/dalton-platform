@@ -87,20 +87,30 @@ Responda APENAS o JSON, sem texto adicional.`,
     const data = await res.json();
 
     if (!res.ok) {
-      console.error("[IDENTIFICAR] API error:", JSON.stringify(data));
+      console.error("[IDENTIFICAR] API error:", JSON.stringify(data).slice(0, 300));
       return NextResponse.json({ error: `Erro da IA: ${data.error?.message || res.statusText}` }, { status: 500 });
     }
 
-    const text = data.content?.[0]?.text || "";
-    console.log(`[IDENTIFICAR] Response: ${text.slice(0, 100)}...`);
+    // Find text content — might be in thinking blocks or regular content
+    const textBlock = data.content?.find((c: { type: string }) => c.type === "text");
+    const text = textBlock?.text || "";
+    console.log(`[IDENTIFICAR] Response (${text.length} chars): ${text.slice(0, 200)}`);
 
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    // Extract JSON — handle markdown code blocks and raw JSON
+    const cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "");
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
+      console.error("[IDENTIFICAR] No JSON found in response:", text.slice(0, 500));
       return NextResponse.json({ error: "Não foi possível analisar a imagem. Tente com outra foto." }, { status: 500 });
     }
 
-    const result = JSON.parse(jsonMatch[0]);
-    return NextResponse.json(result);
+    try {
+      const result = JSON.parse(jsonMatch[0]);
+      return NextResponse.json(result);
+    } catch (parseErr) {
+      console.error("[IDENTIFICAR] JSON parse error:", parseErr, "Raw:", jsonMatch[0].slice(0, 200));
+      return NextResponse.json({ error: "Erro ao processar resposta da IA. Tente novamente." }, { status: 500 });
+    }
   } catch (err) {
     console.error("[IDENTIFICAR] Exception:", err instanceof Error ? err.message : String(err));
     return NextResponse.json(
