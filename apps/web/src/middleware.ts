@@ -8,7 +8,7 @@ function getSecret() {
 }
 
 // Public paths — no auth required
-const PUBLIC_PATHS = ["/", "/login", "/esqueci-senha", "/primeiro-acesso", "/transparencia", "/api/auth/google", "/api/auth/google/callback", "/api/apresentacao"];
+const PUBLIC_PATHS = ["/", "/login", "/esqueci-senha", "/primeiro-acesso", "/transparencia", "/api/auth/google", "/api/auth/google/callback", "/api/auth/google/redirect", "/api/apresentacao"];
 
 // Route access by profile — which paths each role can access
 // If a path is not listed, only ADMIN_GERAL and ADMIN_UNIDADE can access it

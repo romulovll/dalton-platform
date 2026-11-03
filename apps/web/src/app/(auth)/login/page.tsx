@@ -106,14 +106,15 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Google Sign-In */}
+          {/* Google Sign-In — redirect mode for mobile compatibility */}
           <div className="mb-4">
             <div
               id="g_id_onload"
               data-client_id={GOOGLE_CLIENT_ID}
-              data-callback="handleGoogleSignIn"
+              data-login_uri={`${typeof window !== "undefined" ? window.location.origin : ""}/api/auth/google/redirect`}
               data-auto_prompt="false"
               data-locale="pt-BR"
+              data-ux_mode="redirect"
             />
             <div
               className="g_id_signin flex justify-center"
