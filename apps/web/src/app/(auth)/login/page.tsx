@@ -51,7 +51,7 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (data.error) return { error: data.error };
-      router.push("/painel");
+      window.location.href = "/painel";
       return null;
     },
     null
