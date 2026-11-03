@@ -34,6 +34,7 @@ import {
   SidebarMenuButton,
   SidebarHeader,
   SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 // Which profiles can see each menu group
@@ -89,6 +90,7 @@ const menuItems = [
 
 export function AppSidebar({ user }: { user: { nome: string; email: string; perfil: string } }) {
   const pathname = usePathname();
+  const { setOpenMobile, isMobile } = useSidebar();
   const initials = user.nome
     .split(" ")
     .filter(Boolean)
@@ -130,7 +132,7 @@ export function AppSidebar({ user }: { user: { nome: string; email: string; perf
                   return (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
-                        render={<Link href={item.href} />}
+                        render={<Link href={item.href} onClick={() => { if (isMobile) setOpenMobile(false); }} />}
                         isActive={isActive}
                         tooltip={item.label}
                       >
