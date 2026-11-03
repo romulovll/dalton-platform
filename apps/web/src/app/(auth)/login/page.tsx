@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useCallback, useEffect, useState } from "react";
+import { useActionState, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
@@ -25,7 +25,6 @@ declare global {
 export default function LoginPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
@@ -37,7 +36,7 @@ export default function LoginPage() {
           ]);
           formData.set("recaptcha_token", token);
         }
-      } catch { /* graceful — skip reCAPTCHA if unavailable or slow */ }
+      } catch { /* graceful — skip if unavailable or slow */ }
       return loginAction(formData);
     },
     null
@@ -45,26 +44,15 @@ export default function LoginPage() {
 
   const [googleState, setGoogleState] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => {
-      setGoogleLoading(true);
-      try {
-        const res = await fetch("/api/auth/google", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ credential: formData.get("credential") }),
-        });
-        const data = await res.json();
-        if (data.error) {
-          setGoogleLoading(false);
-          return { error: data.error };
-        }
-        // Small delay to let cookie propagate before redirect
-        await new Promise((r) => setTimeout(r, 300));
-        window.location.replace("/painel");
-        return null;
-      } catch {
-        setGoogleLoading(false);
-        return { error: "Erro na autenticação. Tente novamente." };
-      }
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: formData.get("credential") }),
+      });
+      const data = await res.json();
+      if (data.error) return { error: data.error };
+      router.push("/painel");
+      return null;
     },
     null
   );
@@ -75,34 +63,23 @@ export default function LoginPage() {
     setGoogleState(fd);
   }, [setGoogleState]);
 
-  // Register global callback immediately — must be set before Google script loads
+  // Register global callback for Google Sign-In
   if (typeof window !== "undefined") {
     window.handleGoogleSignIn = handleGoogleCallback;
   }
 
   const error = state?.error || googleState?.error;
 
-  if (googleLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-cinza-claro">
-        <div className="text-center">
-          <div className="h-8 w-8 border-3 border-verde-escuro border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm font-medium text-verde-escuro">Entrando...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cinza-claro px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-cinza-claro">
       <Script
         src={`https://www.google.com/recaptcha/enterprise.js?render=${RECAPTCHA_SITE_KEY}`}
         strategy="afterInteractive"
       />
-      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
+      <Script src="https://accounts.google.com/gsi/client?hl=pt-BR" strategy="afterInteractive" />
 
-      <div className="w-full max-w-md">
-        <div className="rounded-2xl bg-white p-5 sm:p-8 shadow-lg border border-gray-100">
+      <div className="w-full max-w-md mx-4">
+        <div className="rounded-2xl bg-white p-8 shadow-lg border border-gray-100">
           {/* Logo */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
@@ -131,35 +108,23 @@ export default function LoginPage() {
 
           {/* Google Sign-In */}
           <div className="mb-4">
-            <div id="google-btn-container" ref={(el) => {
-              if (!el || el.childElementCount > 0) return;
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const tryRender = () => {
-                const google = (window as any).google;
-                if (google?.accounts?.id) {
-                  google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: (response: { credential: string }) => {
-                      window.handleGoogleSignIn(response);
-                    },
-                    ux_mode: "popup",
-                    itp_support: true,
-                  });
-                  const containerWidth = el.parentElement?.offsetWidth || 320;
-                  google.accounts.id.renderButton(el, {
-                    theme: "outline",
-                    size: "large",
-                    width: containerWidth,
-                    text: "signin_with",
-                    shape: "rectangular",
-                    locale: "pt-BR",
-                  });
-                } else {
-                  setTimeout(tryRender, 300);
-                }
-              };
-              tryRender();
-            }} className="flex justify-center w-full" />
+            <div
+              id="g_id_onload"
+              data-client_id={GOOGLE_CLIENT_ID}
+              data-callback="handleGoogleSignIn"
+              data-auto_prompt="false"
+              data-locale="pt-BR"
+            />
+            <div
+              className="g_id_signin flex justify-center"
+              data-type="standard"
+              data-shape="rectangular"
+              data-theme="outline"
+              data-text="signin_with"
+              data-size="large"
+              data-logo_alignment="left"
+              data-width="360"
+            />
           </div>
 
           <div className="relative my-4">
