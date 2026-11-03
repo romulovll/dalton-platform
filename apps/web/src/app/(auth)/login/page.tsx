@@ -94,15 +94,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cinza-claro">
+    <div className="min-h-screen flex items-center justify-center bg-cinza-claro px-4 py-8">
       <Script
         src={`https://www.google.com/recaptcha/enterprise.js?render=${RECAPTCHA_SITE_KEY}`}
         strategy="afterInteractive"
       />
       <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
 
-      <div className="w-full max-w-md mx-4">
-        <div className="rounded-2xl bg-white p-8 shadow-lg border border-gray-100">
+      <div className="w-full max-w-md">
+        <div className="rounded-2xl bg-white p-5 sm:p-8 shadow-lg border border-gray-100">
           {/* Logo */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-block">
@@ -129,7 +129,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Google Sign-In — programmatic renderButton (works on desktop + mobile) */}
+          {/* Google Sign-In */}
           <div className="mb-4">
             <div id="google-btn-container" ref={(el) => {
               if (!el || el.childElementCount > 0) return;
@@ -145,10 +145,11 @@ export default function LoginPage() {
                     ux_mode: "popup",
                     itp_support: true,
                   });
+                  const containerWidth = el.parentElement?.offsetWidth || 320;
                   google.accounts.id.renderButton(el, {
                     theme: "outline",
                     size: "large",
-                    width: Math.min(360, window.innerWidth - 80),
+                    width: containerWidth,
                     text: "signin_with",
                     shape: "rectangular",
                     locale: "pt-BR",
@@ -158,7 +159,7 @@ export default function LoginPage() {
                 }
               };
               tryRender();
-            }} className="flex justify-center" />
+            }} className="flex justify-center w-full" />
           </div>
 
           <div className="relative my-4">
