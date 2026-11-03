@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Camera, Package, XCircle, CheckCircle, Loader2, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -26,12 +27,15 @@ export default function IdentificarBemPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<IdentificationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const router = useRouter();
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setPreview(URL.createObjectURL(file));
+    setPhotoFile(file);
     setResult(null);
     setError(null);
     setAnalyzing(true);
@@ -200,12 +204,33 @@ export default function IdentificarBemPage() {
                 Identificar outro
               </Button>
               {result.deveRegistrar && (
-                <Link href="/bens/novo">
-                  <Button className="bg-verde-escuro hover:bg-verde-medio">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Cadastrar este bem
-                  </Button>
-                </Link>
+                <Button
+                  className="bg-verde-escuro hover:bg-verde-medio"
+                  onClick={() => {
+                    const params = new URLSearchParams({
+                      descricao: result.descricao || result.item,
+                      categoria: result.categoria || "",
+                      conservacao: result.conservacao || "",
+                      observacoes: `Identificado por IA: ${result.item}. ${result.motivo}. Valor estimado: ${result.valorEstimado}. Vida útil: ${result.vidaUtil}.`,
+                    });
+                    if (photoFile) {
+                      // Store photo in sessionStorage for the form to pick up
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        sessionStorage.setItem("identificar_foto", reader.result as string);
+                        sessionStorage.setItem("identificar_foto_name", photoFile.name);
+                        sessionStorage.setItem("identificar_foto_type", photoFile.type);
+                        router.push(`/bens/novo?${params.toString()}`);
+                      };
+                      reader.readAsDataURL(photoFile);
+                    } else {
+                      router.push(`/bens/novo?${params.toString()}`);
+                    }
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Cadastrar este bem
+                </Button>
               )}
             </div>
           </CardContent>

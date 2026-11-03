@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Save, Camera } from "lucide-react";
 import { ESTADOS_CONSERVACAO, SITUACOES_BEM, FORMAS_AQUISICAO, ORIGENS_RECURSO } from "@/lib/constants";
 import { createAsset } from "@/lib/actions/assets";
@@ -33,16 +34,43 @@ interface Unidade {
 }
 
 export default function NovoBemPage() {
+  const searchParams = useSearchParams();
   const [categoriaId, setCategoriaId] = useState("");
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [unidades, setUnidades] = useState<Unidade[]>([]);
+  const [prefilledPhoto, setPrefilledPhoto] = useState<string | null>(null);
+
+  // Pre-filled values from AI identification
+  const prefill = {
+    descricao: searchParams.get("descricao") || "",
+    categoria: searchParams.get("categoria") || "",
+    conservacao: searchParams.get("conservacao") || "",
+    observacoes: searchParams.get("observacoes") || "",
+  };
 
   useEffect(() => {
     fetch("/api/form-data").then((r) => r.json()).then((data) => {
       setCategorias(data.categorias);
       setUnidades(data.unidades);
+
+      // Auto-select category if pre-filled
+      if (prefill.categoria) {
+        const match = data.categorias.find((c: Categoria) =>
+          c.nome.toLowerCase().includes(prefill.categoria.toLowerCase())
+        );
+        if (match) setCategoriaId(match.id);
+      }
     });
-  }, []);
+
+    // Load photo from sessionStorage if available
+    const foto = sessionStorage.getItem("identificar_foto");
+    if (foto) {
+      setPrefilledPhoto(foto);
+      sessionStorage.removeItem("identificar_foto");
+      sessionStorage.removeItem("identificar_foto_name");
+      sessionStorage.removeItem("identificar_foto_type");
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const categoria = categorias.find((c) => c.id === categoriaId);
 
@@ -93,7 +121,7 @@ export default function NovoBemPage() {
 
             <div className="space-y-2">
               <Label htmlFor="descricao">Descrição do Bem *</Label>
-              <Input id="descricao" name="descricao" placeholder="Ex: Notebook Dell Latitude 5540" required />
+              <Input id="descricao" name="descricao" placeholder="Ex: Notebook Dell Latitude 5540" defaultValue={prefill.descricao} required />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -289,22 +317,29 @@ export default function NovoBemPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Foto do Bem</Label>
-              <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-gray-200 p-8 transition-colors hover:border-verde-medio/50">
-                <div className="text-center">
-                  <Camera className="mx-auto h-8 w-8 text-cinza-medio mb-2" />
-                  <p className="text-sm text-cinza-medio">Arraste uma foto ou clique para selecionar</p>
-                  <p className="text-xs text-cinza-medio mt-1">JPG, PNG até 5MB</p>
-                  <input type="file" accept="image/*" className="hidden" id="foto" name="foto" />
-                  <Button type="button" variant="outline" size="sm" className="mt-3"
-                    onClick={() => document.getElementById("foto")?.click()}>
-                    Selecionar Arquivo
-                  </Button>
+              {prefilledPhoto ? (
+                <div className="rounded-lg border p-2">
+                  <img src={prefilledPhoto} alt="Foto do bem" className="rounded-lg max-h-[200px] mx-auto object-contain" />
+                  <p className="text-xs text-cinza-medio text-center mt-2">Foto da identificação por IA</p>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-gray-200 p-8 transition-colors hover:border-verde-medio/50">
+                  <div className="text-center">
+                    <Camera className="mx-auto h-8 w-8 text-cinza-medio mb-2" />
+                    <p className="text-sm text-cinza-medio">Arraste uma foto ou clique para selecionar</p>
+                    <p className="text-xs text-cinza-medio mt-1">JPG, PNG até 5MB</p>
+                    <input type="file" accept="image/*" className="hidden" id="foto" name="foto" />
+                    <Button type="button" variant="outline" size="sm" className="mt-3"
+                      onClick={() => document.getElementById("foto")?.click()}>
+                      Selecionar Arquivo
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="observacoes">Observações</Label>
-              <Textarea id="observacoes" name="observacoes" placeholder="Informações adicionais sobre o bem..." rows={3} />
+              <Textarea id="observacoes" name="observacoes" placeholder="Informações adicionais sobre o bem..." defaultValue={prefill.observacoes} rows={3} />
             </div>
           </CardContent>
         </Card>
