@@ -111,7 +111,7 @@ export default function LoginPage() {
             <div
               id="g_id_onload"
               data-client_id={GOOGLE_CLIENT_ID}
-              data-login_uri={`${typeof window !== "undefined" ? window.location.origin : ""}/api/auth/google/redirect`}
+              data-login_uri="https://dalton-web-20602711487.southamerica-east1.run.app/api/auth/google/redirect"
               data-auto_prompt="false"
               data-locale="pt-BR"
               data-ux_mode="redirect"
