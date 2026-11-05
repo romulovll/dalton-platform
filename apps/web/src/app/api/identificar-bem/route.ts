@@ -91,16 +91,21 @@ Responda APENAS o JSON, sem texto adicional.`,
       return NextResponse.json({ error: `Erro da IA: ${data.error?.message || res.statusText}` }, { status: 500 });
     }
 
-    // Find text content — might be in thinking blocks or regular content
-    const textBlock = data.content?.find((c: { type: string }) => c.type === "text");
-    const text = textBlock?.text || "";
-    console.log(`[IDENTIFICAR] Response (${text.length} chars): ${text.slice(0, 200)}`);
+    // Find text content — collect all text blocks
+    const allText = (data.content || [])
+      .filter((c: { type: string }) => c.type === "text")
+      .map((c: { text: string }) => c.text)
+      .join("\n");
+    console.log(`[IDENTIFICAR] Response (${allText.length} chars): ${allText.slice(0, 300)}`);
 
-    // Extract JSON — handle markdown code blocks and raw JSON
-    const cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "");
+    // Extract JSON — strip markdown code fences, find the JSON object
+    const cleaned = allText
+      .replace(/```json\n?/gi, "")
+      .replace(/```\n?/g, "")
+      .trim();
     const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error("[IDENTIFICAR] No JSON found in response:", text.slice(0, 500));
+      console.error("[IDENTIFICAR] No JSON found in:", cleaned.slice(0, 500));
       return NextResponse.json({ error: "Não foi possível analisar a imagem. Tente com outra foto." }, { status: 500 });
     }
 
