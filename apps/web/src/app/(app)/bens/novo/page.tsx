@@ -127,7 +127,7 @@ export default function NovoBemPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="categoriaId">Categoria *</Label>
-                <Select name="categoriaId" value={categoriaId} onValueChange={(val) => setCategoriaId(val ?? "")}>
+                <Select name="categoriaId" key={categoriaId || "empty"} value={categoriaId || undefined} onValueChange={(val) => setCategoriaId(val ?? "")}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a categoria" />
                   </SelectTrigger>
