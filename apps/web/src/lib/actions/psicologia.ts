@@ -57,7 +57,7 @@ export async function updateStatusAgendamento(id: string, status: StatusAgendaPs
   });
 }
 
-export async function getAgenda(filters?: { data?: string; status?: string }) {
+export async function getAgenda(filters?: { data?: string; mes?: string; status?: string }) {
   const session = await getSession();
   if (!session) throw new Error("Não autenticado");
 
@@ -70,7 +70,13 @@ export async function getAgenda(filters?: { data?: string; status?: string }) {
 
   if (filters?.status) where.status = filters.status;
 
-  if (filters?.data) {
+  if (filters?.mes) {
+    // Monthly view: "2026-11" → first day to last day
+    const [ano, mes] = filters.mes.split("-").map(Number);
+    const inicio = new Date(ano, mes - 1, 1);
+    const fim = new Date(ano, mes, 1);
+    where.dataHora = { gte: inicio, lt: fim };
+  } else if (filters?.data) {
     const date = new Date(filters.data);
     const nextDay = new Date(date);
     nextDay.setDate(nextDay.getDate() + 1);
