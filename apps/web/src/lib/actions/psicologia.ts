@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { requireProfile } from "@/lib/rbac";
@@ -55,6 +56,8 @@ export async function updateStatusAgendamento(id: string, status: StatusAgendaPs
       canceladoPor: status === "CANCELADO" ? session.userId : undefined,
     },
   });
+
+  revalidatePath("/psicologia");
 }
 
 export async function getAgenda(filters?: { data?: string; mes?: string; status?: string }) {
