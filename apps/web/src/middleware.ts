@@ -14,9 +14,9 @@ const PUBLIC_PATHS = ["/", "/login", "/esqueci-senha", "/primeiro-acesso", "/tra
 // If a path is not listed, only ADMIN_GERAL and ADMIN_UNIDADE can access it
 const ROUTE_ACCESS: Record<string, string[]> = {
   // Everyone can access
-  "/painel": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PROFESSOR", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR", "CONSULTA"],
-  "/api/logout": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PROFESSOR", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR", "CONSULTA"],
-  "/chamados": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PROFESSOR", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR", "CONSULTA"],
+  "/painel": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PROFESSOR", "PSICOLOGO", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR", "CONSULTA"],
+  "/api/logout": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PROFESSOR", "PSICOLOGO", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR", "CONSULTA"],
+  "/chamados": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PROFESSOR", "PSICOLOGO", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR", "CONSULTA"],
 
   // Patrimônio — no professors or consulta
   "/bens": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR"],
@@ -48,7 +48,7 @@ const ROUTE_ACCESS: Record<string, string[]> = {
   "/documentos": ["ADMIN_GERAL", "ADMIN_UNIDADE"],
 
   // APIs that need broader access
-  "/api/form-data": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR"],
+  "/api/form-data": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "PSICOLOGO", "CONTADOR", "AUDITOR", "RESPONSAVEL_SETOR"],
   "/api/bens-list": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "RESPONSAVEL_SETOR"],
   "/api/upload": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "RESPONSAVEL_SETOR"],
   "/api/identificar-bem": ["ADMIN_GERAL", "ADMIN_UNIDADE", "GESTOR", "RESPONSAVEL_SETOR"],
