@@ -7,18 +7,22 @@ import { cn } from "cn";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarCheck } from "lucide-react";
 import { getAtividades } from "@/lib/actions/atividades";
+import { getUnidades } from "@/lib/actions/units";
 import { getPresencaDiaria } from "@/lib/actions/presenca";
 import { PresencaForm } from "./presenca-form";
 
 export default async function PresencaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ atividade?: string; data?: string }>;
+  searchParams: Promise<{ atividade?: string; data?: string; unidade?: string }>;
 }) {
   const params = await searchParams;
-  const { atividade: atividadeId, data } = params;
+  const { atividade: atividadeId, data, unidade: unidadeId } = params;
 
-  const atividades = await getAtividades();
+  const [atividades, unidades] = await Promise.all([
+    getAtividades({ unidadeId }),
+    getUnidades(),
+  ]);
 
   const records =
     atividadeId && data ? await getPresencaDiaria(atividadeId, data) : null;
@@ -47,6 +51,25 @@ export default async function PresencaPage({
         <CardContent>
           <form method="get" className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="flex-1 space-y-2">
+              <label htmlFor="unidade" className="text-sm font-medium">
+                Unidade
+              </label>
+              <select
+                id="unidade"
+                name="unidade"
+                defaultValue={unidadeId ?? ""}
+                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <option value="">Todas as unidades</option>
+                {unidades.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex-1 space-y-2">
               <label htmlFor="atividade" className="text-sm font-medium">
                 Atividade
               </label>
@@ -54,12 +77,12 @@ export default async function PresencaPage({
                 id="atividade"
                 name="atividade"
                 defaultValue={atividadeId ?? ""}
-                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <option value="">Selecione uma atividade</option>
                 {atividades.map((a) => (
                   <option key={a.id} value={a.id}>
-                    {a.nome}
+                    {a.nome} {a.unidade ? `(${a.unidade.nome})` : ""}
                   </option>
                 ))}
               </select>
