@@ -548,6 +548,7 @@ model AtividadeParticipante {
   id              String   @id @default(cuid())
   atividadeId     String   @map("atividade_id")
   participanteId  String   @map("participante_id")
+  ativo           Boolean  @default(true)
   createdAt       DateTime @default(now()) @map("created_at")
 
   atividade       Atividade    @relation(fields: [atividadeId], references: [id])

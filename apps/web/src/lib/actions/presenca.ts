@@ -7,9 +7,9 @@ import { requireProfile } from "@/lib/rbac";
 export async function getPresencaDiaria(atividadeId: string, data: string) {
   const date = new Date(data);
 
-  // Get all enrolled participants for this activity
+  // Get active enrolled participants for this activity
   const enrolled = await prisma.atividadeParticipante.findMany({
-    where: { atividadeId },
+    where: { atividadeId, ativo: true },
     include: {
       participante: {
         select: {

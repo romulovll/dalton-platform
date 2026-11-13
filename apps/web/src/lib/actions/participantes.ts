@@ -309,3 +309,17 @@ export async function removeMembroFamiliar(id: string, participanteId: string) {
   await prisma.membroFamiliar.delete({ where: { id } });
   redirect(`/participantes/${participanteId}`);
 }
+
+export async function toggleParticipanteStatus(id: string) {
+  await requireProfile("GESTOR");
+  const participante = await prisma.participante.findUnique({ where: { id } });
+  if (!participante) throw new Error("Participante não encontrado");
+
+  const novaSituacao = participante.situacao === "ATIVO" ? "INATIVO" : "ATIVO";
+  await prisma.participante.update({
+    where: { id },
+    data: { situacao: novaSituacao },
+  });
+
+  redirect(`/participantes/${id}`);
+}

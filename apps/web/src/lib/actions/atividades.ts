@@ -129,6 +129,20 @@ export async function removeParticipanteFromAtividade(atividadeId: string, parti
   redirect(`/atividades/${atividadeId}`);
 }
 
+export async function toggleParticipanteEnrollment(atividadeId: string, participanteId: string) {
+  await requireProfile("GESTOR");
+  const enrollment = await prisma.atividadeParticipante.findFirst({
+    where: { atividadeId, participanteId },
+  });
+  if (enrollment) {
+    await prisma.atividadeParticipante.update({
+      where: { id: enrollment.id },
+      data: { ativo: !enrollment.ativo },
+    });
+  }
+  redirect(`/atividades/${atividadeId}`);
+}
+
 export async function addProfessorToAtividade(atividadeId: string, usuarioId: string) {
   await requireProfile("GESTOR");
   await prisma.atividadeProfessor.create({
