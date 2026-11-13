@@ -303,6 +303,7 @@ model Usuario {
   chamados        Chamado[]
   documentos      Documento[]
   atividadesResp  Atividade[]    @relation("atividade_professor")
+  atividadesProf  AtividadeProfessor[] @relation("professor_atividades")
   presencasReg    Presenca[]     @relation("presenca_registrador")
   agendaPsi       AgendaPsicologia[] @relation("psicologo_agenda")
 
@@ -523,10 +524,24 @@ model Atividade {
 
   unidade       Unidade?  @relation(fields: [unidadeId], references: [id])
   usuario       Usuario?  @relation("atividade_professor", fields: [usuarioId], references: [id])
+  professores   AtividadeProfessor[]
   participantes AtividadeParticipante[]
   presencas     Presenca[]
 
   @@map("atividades")
+}
+
+model AtividadeProfessor {
+  id          String   @id @default(cuid())
+  atividadeId String   @map("atividade_id")
+  usuarioId   String   @map("usuario_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  atividade   Atividade @relation(fields: [atividadeId], references: [id])
+  usuario     Usuario   @relation("professor_atividades", fields: [usuarioId], references: [id])
+
+  @@unique([atividadeId, usuarioId])
+  @@map("atividade_professores")
 }
 
 model AtividadeParticipante {

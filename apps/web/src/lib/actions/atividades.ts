@@ -61,9 +61,12 @@ export async function getAtividades(filters?: { unidadeId?: string; publicoAlvo?
   if (filters?.unidadeId) where.unidadeId = filters.unidadeId;
   if (filters?.publicoAlvo) where.publicoAlvo = filters.publicoAlvo;
 
-  // Professors only see their own activities
+  // Professors only see activities they're assigned to
   if (session?.perfil === "PROFESSOR") {
-    where.usuarioId = session.userId;
+    where.OR = [
+      { usuarioId: session.userId },
+      { professores: { some: { usuarioId: session.userId } } },
+    ];
   }
 
   return prisma.atividade.findMany({
@@ -72,6 +75,7 @@ export async function getAtividades(filters?: { unidadeId?: string; publicoAlvo?
     include: {
       unidade: { select: { nome: true } },
       usuario: { select: { nome: true } },
+      professores: { include: { usuario: { select: { id: true, nome: true } } } },
       _count: { select: { participantes: true, presencas: true } },
     },
   });
@@ -85,6 +89,7 @@ export async function getAtividade(id: string) {
     include: {
       unidade: true,
       usuario: { select: { nome: true } },
+      professores: { include: { usuario: { select: { id: true, nome: true } } } },
       participantes: {
         include: {
           participante: {
@@ -98,9 +103,11 @@ export async function getAtividade(id: string) {
     },
   });
 
-  // Professors can only see their own activities
-  if (atividade && session?.perfil === "PROFESSOR" && atividade.usuarioId !== session.userId) {
-    return null;
+  // Professors can only see activities they're assigned to
+  if (atividade && session?.perfil === "PROFESSOR") {
+    const isAssigned = atividade.usuarioId === session.userId ||
+      atividade.professores.some((p) => p.usuario.id === session.userId);
+    if (!isAssigned) return null;
   }
 
   return atividade;
@@ -120,6 +127,40 @@ export async function removeParticipanteFromAtividade(atividadeId: string, parti
     where: { atividadeId, participanteId },
   });
   redirect(`/atividades/${atividadeId}`);
+}
+
+export async function addProfessorToAtividade(atividadeId: string, usuarioId: string) {
+  await requireProfile("GESTOR");
+  await prisma.atividadeProfessor.create({
+    data: { atividadeId, usuarioId },
+  });
+  redirect(`/atividades/${atividadeId}`);
+}
+
+export async function removeProfessorFromAtividade(atividadeId: string, usuarioId: string) {
+  await requireProfile("GESTOR");
+  await prisma.atividadeProfessor.deleteMany({
+    where: { atividadeId, usuarioId },
+  });
+  redirect(`/atividades/${atividadeId}`);
+}
+
+export async function getProfessoresDisponiveis(atividadeId: string) {
+  const assigned = await prisma.atividadeProfessor.findMany({
+    where: { atividadeId },
+    select: { usuarioId: true },
+  });
+  const assignedIds = assigned.map((a) => a.usuarioId);
+
+  return prisma.usuario.findMany({
+    where: {
+      situacao: "ATIVO",
+      id: { notIn: assignedIds },
+      unidades: { some: { perfil: { in: ["PROFESSOR", "GESTOR", "ADMIN_GERAL", "ADMIN_UNIDADE"] } } },
+    },
+    orderBy: { nome: "asc" },
+    select: { id: true, nome: true, email: true },
+  });
 }
 
 export async function getParticipantesDisponiveis(atividadeId: string) {
